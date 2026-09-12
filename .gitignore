@@ -1,0 +1,30 @@
+# Git ignore file for face-recognition-system
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.eggs/
+venv/
+.venv/
+env/
+
+# Database (exclude — regenerate on setup)
+database/enrolled_faces.json
+
+# Generated evaluation outputs
+evaluation/*.png
+evaluation/*.json
+
+# Sample data (auto-generated)
+sample_data/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp

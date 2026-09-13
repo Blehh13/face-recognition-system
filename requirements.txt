@@ -1,42 +1,34 @@
-# Verified on Python 3.14.6 / Windows 11. The full test suite (100 tests)
-# passes against exactly these versions.
+# Verified on Python 3.14.6 / Windows 11. The full test suite passes against
+# these versions.
 #
-# Lower bounds rather than hard pins: the previous file pinned versions that
-# were never actually installed here (numpy 1.26 against 2.5 in use, opencv
-# 4.10 against 5.0), so `pip install -r requirements.txt` would have produced
-# an environment nobody had tested.
+# No compiler required. The default engine is YuNet + SFace, which runs through
+# opencv-python's own DNN module, so nothing here is built from source.
+# dlib is optional — see requirements-dlib.txt.
 
-# --- Core recognition -------------------------------------------------------
-face-recognition>=1.2.3
-face-recognition-models>=0.1.0
+# --- Core ------------------------------------------------------------------
 numpy>=1.26
 Pillow>=10.4
 
-# opencv-python 4.5.4+ is required for cv2.FaceDetectorYN / cv2.FaceRecognizerSF,
-# used by the optional engine="opencv" backend (src/opencv_engine.py).
-# Verified against 5.0.0.
+# opencv-python 4.5.4+ provides cv2.FaceDetectorYN and cv2.FaceRecognizerSF,
+# the default detector and embedder. Verified against 5.0.0. The ONNX weights
+# (~37 MB) are downloaded on first use.
 opencv-python>=4.5.4
 
-# face_recognition_models imports pkg_resources at module load, and setuptools
-# removed pkg_resources in 81.0. Without this bound, every dlib-backed call
-# fails with "ModuleNotFoundError: No module named 'pkg_resources'".
-setuptools<81
-
-# --- Web --------------------------------------------------------------------
+# --- Web -------------------------------------------------------------------
 Flask>=3.0
 
-# --- CLI --------------------------------------------------------------------
+# Only needed to serve behind a real WSGI server (Docker/deployment).
+gunicorn>=21.2
+
+# --- CLI -------------------------------------------------------------------
 click>=8.1
 
-# --- Evaluation and reporting -----------------------------------------------
+# --- Evaluation and reporting ----------------------------------------------
+# Used by src/evaluator.py and the ml/ benchmarks, not by the web app.
 scikit-learn>=1.5
 matplotlib>=3.9
 seaborn>=0.13
 tqdm>=4.66
 
-# --- Serving ----------------------------------------------------------------
-# Only needed to run behind a real WSGI server (Docker/deployment).
-gunicorn>=21.2
-
-# --- Tests ------------------------------------------------------------------
+# --- Tests -----------------------------------------------------------------
 pytest>=8.3

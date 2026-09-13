@@ -1,25 +1,15 @@
-# Runtime dependencies of the web application only.
+# Runtime dependencies of the web application only, used by the Dockerfile.
 #
-# Derived from app.py's actual import closure: PIL, cv2, face_recognition,
-# flask, numpy. scikit-learn, matplotlib, seaborn, tqdm, click and pytest are
-# used by the CLI, the evaluator and the test suite — none of which the server
-# imports — and together they accounted for most of an 841 MB site-packages
-# layer in the container image.
-#
-# Use requirements.txt for development; this file is for the Dockerfile.
+# Derived from app.py's actual import closure: PIL, cv2, flask, numpy. The
+# default engine is YuNet + SFace via opencv-python, so dlib is not here and
+# the image needs no compiler.
 
-face-recognition>=1.2.3
-face-recognition-models>=0.1.0
 numpy>=1.26
 Pillow>=10.4
 
-# Headless build: identical API, without the X11/GL libraries that the
-# desktop wheel pulls in. Only cli.py's --show needs a display, and that
-# does not run in a container.
+# Headless build: identical API, without the X11/GL libraries the desktop
+# wheel pulls in. Provides FaceDetectorYN and FaceRecognizerSF.
 opencv-python-headless>=4.5.4
-
-# face_recognition_models imports pkg_resources, removed in setuptools 81.
-setuptools<81
 
 Flask>=3.0
 gunicorn>=21.2

@@ -125,11 +125,11 @@ def test_sface_is_stable_for_the_same_image(face_photo):
 @requires_models
 def test_sface_separates_a_person_from_a_distorted_stranger(face_photo):
     """A mirrored face should stay much closer than an unrelated crop."""
-    from src.opencv_engine import SFaceEmbedder
+    from src.opencv_engine import DEFAULT_SFACE_THRESHOLD, SFaceEmbedder
     e = SFaceEmbedder()
     original = e.embed(face_photo)[0]
     mirrored = e.embed(np.ascontiguousarray(face_photo[:, ::-1]))[0]
-    assert np.linalg.norm(original - mirrored) < 1.17   # the fitted threshold
+    assert np.linalg.norm(original - mirrored) < DEFAULT_SFACE_THRESHOLD
 
 
 @requires_models
@@ -138,7 +138,11 @@ def test_end_to_end_enroll_and_identify(face_photo):
     with tempfile.TemporaryDirectory() as tmp:
         system = FaceRecognitionSystem(engine="opencv", db_path=os.path.join(tmp, "db.json"))
         assert system.engine_name == "opencv-sface"
-        assert system.matcher.threshold == pytest.approx(1.17)
+        # Compare against the constant, not a literal: the threshold is refitted
+        # whenever aggregation or the engine changes, and a hardcoded copy here
+        # would fail for the wrong reason.
+        from src.opencv_engine import DEFAULT_SFACE_THRESHOLD
+        assert system.matcher.threshold == pytest.approx(DEFAULT_SFACE_THRESHOLD)
 
         assert system.enroll_from_array("Grace Hopper", face_photo).enrolled == 1
         (_loc, result), = system.identify_from_array(face_photo)

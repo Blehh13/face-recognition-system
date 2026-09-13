@@ -19,12 +19,20 @@
       "source": "https://commons.wikimedia.org/wiki/File:Grace_Hopper.jpg"
     },
     {
-      "file": "probe/Grace_Hopper_1.jpg",
+      "file": "enrolled/Grace_Hopper/Grace_Hopper_3.jpg",
       "person": "Grace_Hopper",
       "commons_title": "File:Grace Hopper in the 1940s.webp",
       "licence": "Public domain",
       "credit": "AnonymousUnknown author",
       "source": "https://commons.wikimedia.org/wiki/File:Grace_Hopper_in_the_1940s.webp"
+    },
+    {
+      "file": "probe/Grace_Hopper_1.jpg",
+      "person": "Grace_Hopper",
+      "commons_title": "File:Commodore Grace Hopper, an early computer pioneer.png",
+      "licence": "Public domain",
+      "credit": "USN",
+      "source": "https://commons.wikimedia.org/wiki/File:Commodore_Grace_Hopper,_an_early_computer_pioneer.png"
     },
     {
       "file": "enrolled/Katherine_Johnson/Katherine_Johnson_1.jpg",
@@ -43,12 +51,20 @@
       "source": "https://commons.wikimedia.org/wiki/File:Katherine_Johnson_2.jpg"
     },
     {
-      "file": "probe/Katherine_Johnson_1.jpg",
+      "file": "enrolled/Katherine_Johnson/Katherine_Johnson_3.jpg",
       "person": "Katherine_Johnson",
       "commons_title": "File:Katherine Johnson color.png",
       "licence": "Public domain",
       "credit": "NASA",
       "source": "https://commons.wikimedia.org/wiki/File:Katherine_Johnson_color.png"
+    },
+    {
+      "file": "probe/Katherine_Johnson_1.jpg",
+      "person": "Katherine_Johnson",
+      "commons_title": "File:Katherine johnson john glenn.png",
+      "licence": "Public domain",
+      "credit": "NASA",
+      "source": "https://commons.wikimedia.org/wiki/File:Katherine_johnson_john_glenn.png"
     },
     {
       "file": "enrolled/Sally_Ride/Sally_Ride_1.jpg",
@@ -67,12 +83,20 @@
       "source": "https://commons.wikimedia.org/wiki/File:Sally_Ride_(1984).jpg"
     },
     {
-      "file": "probe/Sally_Ride_1.jpg",
+      "file": "enrolled/Sally_Ride/Sally_Ride_3.jpg",
       "person": "Sally_Ride",
       "commons_title": "File:Sally Ride in 1984.jpg",
       "licence": "Public domain",
       "credit": "NASA; retouched by Adam Cuerden (edited to remove dust and scratches)",
       "source": "https://commons.wikimedia.org/wiki/File:Sally_Ride_in_1984.jpg"
+    },
+    {
+      "file": "probe/Sally_Ride_1.jpg",
+      "person": "Sally_Ride",
+      "commons_title": "File:WRM Sally Ride Woman astronaut - Astronautin.jpg",
+      "licence": "Public domain",
+      "credit": "Unknown or not provided",
+      "source": "https://commons.wikimedia.org/wiki/File:WRM_Sally_Ride_Woman_astronaut_-_Astronautin.jpg"
     },
     {
       "file": "enrolled/Mae_Jemison/Mae_Jemison_1.jpg",
@@ -91,12 +115,20 @@
       "source": "https://commons.wikimedia.org/wiki/File:Mae_Carol_Jemison_(cropped_2).jpg"
     },
     {
-      "file": "probe/Mae_Jemison_1.jpg",
+      "file": "enrolled/Mae_Jemison/Mae_Jemison_3.jpg",
       "person": "Mae_Jemison",
       "commons_title": "File:Mae Jemison - Official portrait of 1987 astronaut candidate.jpg",
       "licence": "Public domain",
       "credit": "NASA",
       "source": "https://commons.wikimedia.org/wiki/File:Mae_Jemison_-_Official_portrait_of_1987_astronaut_candidate.jpg"
+    },
+    {
+      "file": "probe/Mae_Jemison_1.jpg",
+      "person": "Mae_Jemison",
+      "commons_title": "File:Stamp of Azerbaijan - 1995 - Colnect 943390 - Mae Jemison.jpeg",
+      "licence": "Public domain",
+      "credit": "Post of Azerbaijan",
+      "source": "https://commons.wikimedia.org/wiki/File:Stamp_of_Azerbaijan_-_1995_-_Colnect_943390_-_Mae_Jemison.jpeg"
     },
     {
       "file": "enrolled/Buzz_Aldrin/Buzz_Aldrin_1.jpg",
@@ -115,12 +147,20 @@
       "source": "https://commons.wikimedia.org/wiki/File:Buzz_Aldrin_in_2019_(cropped).jpg"
     },
     {
-      "file": "probe/Buzz_Aldrin_1.jpg",
+      "file": "enrolled/Buzz_Aldrin/Buzz_Aldrin_3.jpg",
       "person": "Buzz_Aldrin",
       "commons_title": "File:Roscoe Bartlett and Buzz Aldrin (cropped).jpg",
       "licence": "Public domain",
       "credit": "Office of Congressman Roscoe Bartlett",
       "source": "https://commons.wikimedia.org/wiki/File:Roscoe_Bartlett_and_Buzz_Aldrin_(cropped).jpg"
+    },
+    {
+      "file": "probe/Buzz_Aldrin_1.jpg",
+      "person": "Buzz_Aldrin",
+      "commons_title": "File:Buzz Aldrin at the 2019 State of the Union Address.jpg",
+      "licence": "Public domain",
+      "credit": "The White House from Washington, DC",
+      "source": "https://commons.wikimedia.org/wiki/File:Buzz_Aldrin_at_the_2019_State_of_the_Union_Address.jpg"
     },
     {
       "file": "probe/unknown_1_1.jpg",

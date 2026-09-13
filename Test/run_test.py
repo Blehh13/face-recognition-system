@@ -47,7 +47,10 @@ def expected_label(filename: str) -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run the committed test set.")
-    parser.add_argument("--engine", choices=["dlib", "opencv"], default="dlib")
+    # No default of its own: the point of this script is to exercise whatever
+    # the system actually ships with, so a default here would silently test a
+    # configuration nobody runs.
+    parser.add_argument("--engine", choices=["dlib", "opencv"], default=None)
     parser.add_argument("--threshold", type=float, default=None)
     args = parser.parse_args()
 
@@ -60,11 +63,15 @@ def main() -> int:
         return 1
 
     db_path = os.path.join(tempfile.mkdtemp(prefix="facerec_test_"), "db.json")
-    system = FaceRecognitionSystem(engine=args.engine, threshold=args.threshold, db_path=db_path)
+    kwargs = {"threshold": args.threshold, "db_path": db_path}
+    if args.engine:
+        kwargs["engine"] = args.engine
+    system = FaceRecognitionSystem(**kwargs)
+    engine_used = system.engine
     threshold = system.matcher.threshold
 
     # ------------------------------------------------------------ enrol
-    print(f"Enrolling (engine={args.engine}, threshold={threshold})")
+    print(f"Enrolling (engine={engine_used}, threshold={threshold})")
     enrolment = {}
     for person_dir in sorted(os.listdir(enrolled_dir)):
         full = os.path.join(enrolled_dir, person_dir)
@@ -132,7 +139,7 @@ def main() -> int:
 
     summary = {
         "generated": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
-        "engine": args.engine,
+        "engine": engine_used,
         "threshold": threshold,
         "people_enrolled": len(enrolment),
         "enrolment_photos": sum(enrolment.values()),
@@ -171,8 +178,7 @@ def _write_markdown(path: str, summary: dict, rows: list[dict], enrolment: dict)
     lines = [
         "# Test results",
         "",
-        f"Generated {summary['generated']} by `python Test/run_test.py"
-        f"{'' if summary['engine'] == 'dlib' else ' --engine ' + summary['engine']}`.",
+        f"Generated {summary['generated']} by `python Test/run_test.py`.",
         "",
         f"**{summary['people_enrolled']} people enrolled** from "
         f"{summary['enrolment_photos']} photographs, then "

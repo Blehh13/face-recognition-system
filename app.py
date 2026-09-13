@@ -31,6 +31,7 @@ Configuration (environment variables):
 """
 
 import base64
+import json
 import logging
 import os
 import pathlib
@@ -95,6 +96,23 @@ def get_system():
         _system = FaceRecognitionSystem(db_path=os.environ.get("FACEREC_DB") or None)
         logger.info("FaceRecognitionSystem initialised (demo=%s).", DEMO_MODE)
     return _system
+
+
+def error_curve(engine: str) -> list[list[float]]:
+    """
+    Measured [threshold, false-accept rate, false-reject rate] triples.
+
+    Produced by `python -m ml.aggregation --fit` on LFW validation identities
+    with centroid aggregation, and shipped so the UI can state the consequence
+    of a threshold rather than presenting a bare number.
+    """
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        "ml", "results", "error_curves.json")
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            return json.load(handle).get(engine, [])
+    except (OSError, json.JSONDecodeError):
+        return []
 
 
 class ImageError(ValueError):
@@ -264,17 +282,23 @@ def identify():
     except ImageError as exc:
         return jsonify({"error": str(exc)}), 400
 
-    try:
-        threshold = float(request.form.get("threshold", "0.60"))
-    except ValueError:
-        threshold = 0.60
-    threshold = min(max(threshold, 0.05), 2.0)
+    # No hardcoded fallback: the right threshold depends on the engine and on
+    # how enrolled photographs are aggregated. A literal here was still 0.60
+    # from the dlib era and silently rejected valid SFace matches at 0.70.
+    raw = request.form.get("threshold")
+    threshold = None
+    if raw not in (None, ""):
+        try:
+            threshold = min(max(float(raw), 0.05), 4.0)
+        except ValueError:
+            threshold = None
 
     try:
         # Reuse the loaded system and vary only the threshold. Rebuilding it
         # per request re-created the dlib wrappers and re-read the whole
         # database from disk on every identification.
         results = sys_.identify_from_array(img_rgb, threshold=threshold)
+        effective_threshold = threshold if threshold is not None else sys_.matcher.threshold
     except Exception as exc:  # noqa: BLE001
         logger.exception("Identification failed")
         return jsonify({"error": str(exc)}), 500
@@ -300,7 +324,7 @@ def identify():
         "faces": faces,
         "num_faces": len(faces),
         "annotated_image": f"data:image/jpeg;base64,{img_b64}",
-        "threshold_used": threshold,
+        "threshold_used": effective_threshold,
         "enrolled_count": len(sys_.list_enrolled()),
     })
 
@@ -333,8 +357,22 @@ def health():
 
 @app.route("/api/config")
 def api_config():
-    """Runtime facts the frontend needs, chiefly whether this is a public demo."""
-    return jsonify({"demo": DEMO_MODE})
+    """
+    Runtime facts the frontend needs.
+
+    The threshold and its error curve are engine-specific, so the UI reads them
+    from here instead of carrying a copy. A hardcoded 0.60 in the frontend was
+    correct only for the dlib engine with nearest-neighbour matching.
+    """
+    sys_ = get_system()
+    return jsonify({
+        "demo": DEMO_MODE,
+        "engine": sys_.engine_name,
+        "metric": sys_.matcher.metric,
+        "aggregation": sys_.matcher.aggregation,
+        "threshold": sys_.matcher.threshold,
+        "error_curve": error_curve(sys_.engine_name),
+    })
 
 
 @app.errorhandler(413)

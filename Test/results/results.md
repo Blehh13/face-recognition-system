@@ -1,8 +1,8 @@
 # Test results
 
-Generated 2026-09-13 18:06 UTC by `python Test/run_test.py`.
+Generated 2026-09-13 20:01 UTC by `python Test/run_test.py`.
 
-**5 people enrolled** from 10 photographs, then 8 probes identified against them (5 genuine, 3 impostor). Engine `dlib`, threshold 0.6.
+**5 people enrolled** from 14 photographs, then 8 probes identified against them (5 genuine, 3 impostor). Engine `opencv`, threshold 1.012.
 
 ## Summary
 
@@ -21,10 +21,10 @@ TP 5 · FP 0 · TN 3 · FN 0
 
 | person | photos |
 |---|---:|
-| Buzz Aldrin | 2 |
-| Grace Hopper | 2 |
-| Katherine Johnson | 2 |
-| Mae Jemison | 2 |
+| Buzz Aldrin | 3 |
+| Grace Hopper | 3 |
+| Katherine Johnson | 3 |
+| Mae Jemison | 3 |
 | Sally Ride | 2 |
 
 ## Every probe
@@ -34,13 +34,13 @@ Probe photographs are different images from the enrolment ones.
 
 | probe | expected | predicted | distance | runner-up | |
 |---|---|---|---:|---|---|
-| `Buzz_Aldrin_1.jpg` | Buzz Aldrin | Buzz Aldrin | 0.558 | Sally Ride (0.580) | PASS |
-| `Grace_Hopper_1.jpg` | Grace Hopper | Grace Hopper | 0.526 | Katherine Johnson (0.599) | PASS |
-| `Katherine_Johnson_1.jpg` | Katherine Johnson | Katherine Johnson | 0.337 | Grace Hopper (0.650) | PASS |
-| `Mae_Jemison_1.jpg` | Mae Jemison | Mae Jemison | 0.356 | Katherine Johnson (0.702) | PASS |
-| `Sally_Ride_1.jpg` | Sally Ride | Sally Ride | 0.073 | Katherine Johnson (0.694) | PASS |
-| `unknown_1_1.jpg` | Unknown | Unknown | 0.748 | Sally Ride (0.784) | PASS |
-| `unknown_2_1.jpg` | Unknown | Unknown | 0.631 | Sally Ride (0.652) | PASS |
-| `unknown_3_1.jpg` | Unknown | Unknown | 0.670 | Sally Ride (0.719) | PASS |
+| `Buzz_Aldrin_1.jpg` | Buzz Aldrin | Buzz Aldrin | 0.595 | Sally Ride (1.301) | PASS |
+| `Grace_Hopper_1.jpg` | Grace Hopper | Grace Hopper | 0.696 | Katherine Johnson (1.266) | PASS |
+| `Katherine_Johnson_1.jpg` | Katherine Johnson | Katherine Johnson | 0.836 | Buzz Aldrin (1.258) | PASS |
+| `Mae_Jemison_1.jpg` | Mae Jemison | Mae Jemison | 0.842 | Grace Hopper (1.300) | PASS |
+| `Sally_Ride_1.jpg` | Sally Ride | Sally Ride | 0.994 | Buzz Aldrin (1.320) | PASS |
+| `unknown_1_1.jpg` | Unknown | Unknown | 1.277 | Grace Hopper (1.335) | PASS |
+| `unknown_2_1.jpg` | Unknown | Unknown | 1.265 | Buzz Aldrin (1.315) | PASS |
+| `unknown_3_1.jpg` | Unknown | Unknown | 1.242 | Sally Ride (1.255) | PASS |
 
 The runner-up column is the next closest enrolled person. A large gap between the match and the runner-up means the decision was not marginal.

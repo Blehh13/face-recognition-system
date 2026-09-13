@@ -3,35 +3,34 @@ import CameraCapture from '../components/CameraCapture.jsx'
 import { ROUTES, navigate } from '../router.js'
 
 /*
- * Measured false-accept / false-reject rates for the dlib engine, from 3,000
- * impostor and 3,000 genuine LFW pairs on identities the model never saw
- * (python -m ml.calibrate). [threshold, FAR, FRR].
+ * The threshold, its measured error curve and the slider's range all come from
+ * the server (/api/config), because all three are engine-specific. Carrying a
+ * copy here meant the UI advertised dlib's 0.60 while the SFace engine was
+ * actually gating at 1.012 — the slider could not even reach the real value.
+ *
+ * These fallbacks only apply if /api/config cannot be reached.
  */
-const ERROR_CURVE = [
-  [0.30, 0.0000, 0.9533], [0.35, 0.0000, 0.8383], [0.40, 0.0000, 0.6357],
-  [0.45, 0.0000, 0.4130], [0.50, 0.0000, 0.2317], [0.55, 0.0003, 0.1213],
-  [0.60, 0.0063, 0.0517], [0.65, 0.0330, 0.0233], [0.70, 0.0897, 0.0130],
-  [0.75, 0.2217, 0.0063], [0.80, 0.4053, 0.0033], [0.85, 0.6057, 0.0000],
-  [0.90, 0.7937, 0.0000],
-]
-const RECOMMENDED = 0.60
+const FALLBACK_THRESHOLD = 1.012
+const FALLBACK_CURVE = [[0.5, 0, 0.96], [1.0, 0, 0.05], [1.25, 0.73, 0.01], [1.5, 1, 0]]
 
-function ratesAt(t) {
-  const first = ERROR_CURVE[0], last = ERROR_CURVE[ERROR_CURVE.length - 1]
-  if (t <= first[0]) return { far: first[1], frr: first[2] }
+function ratesAt(curve, t) {
+  if (!curve || curve.length === 0) return { far: 0, frr: 0 }
+  if (t <= curve[0][0]) return { far: curve[0][1], frr: curve[0][2] }
+  const last = curve[curve.length - 1]
   if (t >= last[0]) return { far: last[1], frr: last[2] }
-  for (let i = 0; i < ERROR_CURVE.length - 1; i++) {
-    const [t0, f0, r0] = ERROR_CURVE[i], [t1, f1, r1] = ERROR_CURVE[i + 1]
+  for (let i = 0; i < curve.length - 1; i++) {
+    const [t0, f0, r0] = curve[i]
+    const [t1, f1, r1] = curve[i + 1]
     if (t >= t0 && t <= t1) {
-      const k = (t - t0) / (t1 - t0)
+      const k = (t1 - t0) === 0 ? 0 : (t - t0) / (t1 - t0)
       return { far: f0 + k * (f1 - f0), frr: r0 + k * (r1 - r0) }
     }
   }
   return { far: last[1], frr: last[2] }
 }
 
-function describeRisk(t) {
-  const { far, frr } = ratesAt(t)
+function describeRisk(curve, t) {
+  const { far, frr } = ratesAt(curve, t)
   let strangers
   if (far < 0.001) strangers = 'almost never matches a stranger'
   else if (far >= 0.5) strangers = `most strangers will match (${Math.round(far * 100)}%)`
@@ -53,16 +52,27 @@ const fmtPercent = v => (typeof v === 'number' && Number.isFinite(v) ? `${Math.r
  * answer. Keeping the query form on screen next to the result was what made
  * the old layout feel like a control panel rather than a tool that replies.
  */
-export default function Identify({ people, notify, onEnrolThisFace }) {
+export default function Identify({ people, notify, config, onEnrolThisFace }) {
   const [file, setFile] = useState(null)
   const [preview, setPreview] = useState(null)
-  const [threshold, setThreshold] = useState(RECOMMENDED)
+  const [threshold, setThreshold] = useState(null)
   const [dragging, setDragging] = useState(false)
   const [cameraOpen, setCameraOpen] = useState(false)
   const [running, setRunning] = useState(false)
   const [result, setResult] = useState(null)
   const inputRef = useRef(null)
-  const risk = describeRisk(threshold)
+  const recommended = config?.threshold ?? FALLBACK_THRESHOLD
+  const curve = config?.error_curve?.length ? config.error_curve : FALLBACK_CURVE
+  // Span the measured range, so the control can always reach the real gate.
+  const sliderMin = Math.max(0.05, Math.min(curve[0][0], recommended * 0.5))
+  const sliderMax = Math.max(curve[curve.length - 1][0], recommended * 1.5)
+  const active = threshold ?? recommended
+  const risk = describeRisk(curve, active)
+
+  // Adopt the server's threshold once it arrives, unless the user has moved it.
+  useEffect(() => {
+    if (threshold === null && config?.threshold != null) setThreshold(config.threshold)
+  }, [config, threshold])
 
   useEffect(() => {
     if (!file) { setPreview(null); return undefined }
@@ -83,7 +93,7 @@ export default function Identify({ people, notify, onEnrolThisFace }) {
     setRunning(true)
     const body = new FormData()
     body.append('image', file)
-    body.append('threshold', threshold.toFixed(2))
+    body.append('threshold', active.toFixed(3))
     try {
       const res = await fetch('/identify', {
         method: 'POST', headers: { Accept: 'application/json' }, body,
@@ -173,7 +183,7 @@ export default function Identify({ people, notify, onEnrolThisFace }) {
             )}
 
             {face.candidates?.length > 0 && (
-              <Reasoning candidates={face.candidates} threshold={face.threshold_used ?? threshold} />
+              <Reasoning candidates={face.candidates} threshold={face.threshold_used ?? active} />
             )}
 
             {!face.is_known && !nobodyEnrolled && (
@@ -254,20 +264,20 @@ export default function Identify({ people, notify, onEnrolThisFace }) {
       {file && preview && <img className="preview" src={preview} alt={file.name} />}
 
       <details className="tuning">
-        <summary className="tuning-summary">Match strictness · {threshold.toFixed(2)}</summary>
+        <summary className="tuning-summary">Match strictness · {active.toFixed(3)}</summary>
         <div className="tuning-body">
           <input
             className="range"
             type="range"
-            min="0.30" max="0.90" step="0.01"
-            value={threshold}
+            min={sliderMin} max={sliderMax} step="0.005"
+            value={active}
             disabled={running}
             onChange={e => setThreshold(parseFloat(e.target.value))}
           />
           <p className={`risk risk-${risk.tone}`}>{risk.text}</p>
-          {Math.abs(threshold - RECOMMENDED) > 0.005 && (
-            <button type="button" className="btn-link" onClick={() => setThreshold(RECOMMENDED)}>
-              Reset to the recommended {RECOMMENDED.toFixed(2)}
+          {Math.abs(active - recommended) > 0.005 && (
+            <button type="button" className="btn-link" onClick={() => setThreshold(recommended)}>
+              Reset to the recommended {recommended.toFixed(3)}
             </button>
           )}
         </div>

@@ -19,7 +19,7 @@ export default function App() {
   const [people, setPeople] = useState([])
   const [loadingPeople, setLoadingPeople] = useState(true)
   const [online, setOnline] = useState(null)
-  const [demo, setDemo] = useState(false)
+  const [config, setConfig] = useState(null)
   const [toasts, setToasts] = useState([])
 
   /*
@@ -89,7 +89,7 @@ export default function App() {
     let cancelled = false
     fetch('/api/config')
       .then(r => (r.ok ? r.json() : null))
-      .then(cfg => { if (!cancelled && cfg) setDemo(Boolean(cfg.demo)) })
+      .then(cfg => { if (!cancelled && cfg) setConfig(cfg) })
       .catch(() => {})
     return () => { cancelled = true }
   }, [])
@@ -134,7 +134,7 @@ export default function App() {
   if (route === ROUTES.ADD) {
     view = <AddPerson {...shared} handoffPhoto={handoffPhoto} onConsumeHandoff={consumeHandoff} />
   } else if (route === ROUTES.IDENTIFY) {
-    view = <Identify {...shared} onEnrolThisFace={enrolThisFace} />
+    view = <Identify {...shared} config={config} onEnrolThisFace={enrolThisFace} />
   } else {
     view = <Directory {...shared} />
   }
@@ -175,7 +175,7 @@ export default function App() {
       </nav>
 
       <main className="stage">
-        {demo && (
+        {config?.demo && (
           <p className="demo-banner">
             Public demo — enrolled faces are erased whenever the server
             restarts, and nothing is kept.

@@ -1,0 +1,230 @@
+{
+  "dlib": {
+    "1": {
+      "nearest": {
+        "auc": 0.9186,
+        "eer": 0.1375,
+        "accuracy": 0.8669,
+        "tar_at_far_1pct": 0.502,
+        "threshold": 0.5367
+      },
+      "centroid": {
+        "auc": 0.9186,
+        "eer": 0.1375,
+        "accuracy": 0.8669,
+        "tar_at_far_1pct": 0.502,
+        "threshold": 0.5367
+      },
+      "_meta": {
+        "k": 1,
+        "identities": 244,
+        "genuine": 488,
+        "impostor": 218
+      }
+    },
+    "2": {
+      "nearest": {
+        "auc": 0.9516,
+        "eer": 0.0844,
+        "accuracy": 0.9188,
+        "tar_at_far_1pct": 0.503,
+        "threshold": 0.5074
+      },
+      "centroid": {
+        "auc": 0.9664,
+        "eer": 0.0669,
+        "accuracy": 0.9347,
+        "tar_at_far_1pct": 0.5663,
+        "threshold": 0.4909
+      },
+      "_meta": {
+        "k": 2,
+        "identities": 166,
+        "genuine": 332,
+        "impostor": 296
+      }
+    },
+    "3": {
+      "nearest": {
+        "auc": 0.9656,
+        "eer": 0.0614,
+        "accuracy": 0.943,
+        "tar_at_far_1pct": 0.7763,
+        "threshold": 0.5093
+      },
+      "centroid": {
+        "auc": 0.9728,
+        "eer": 0.0526,
+        "accuracy": 0.9583,
+        "tar_at_far_1pct": 0.8289,
+        "threshold": 0.4848
+      },
+      "_meta": {
+        "k": 3,
+        "identities": 114,
+        "genuine": 228,
+        "impostor": 228
+      }
+    },
+    "4": {
+      "nearest": {
+        "auc": 0.9718,
+        "eer": 0.0494,
+        "accuracy": 0.9537,
+        "tar_at_far_1pct": 0.9074,
+        "threshold": 0.4932
+      },
+      "centroid": {
+        "auc": 0.9757,
+        "eer": 0.0494,
+        "accuracy": 0.9691,
+        "tar_at_far_1pct": 0.9444,
+        "threshold": 0.4704
+      },
+      "_meta": {
+        "k": 4,
+        "identities": 81,
+        "genuine": 162,
+        "impostor": 162
+      }
+    },
+    "5": {
+      "nearest": {
+        "auc": 0.9879,
+        "eer": 0.0515,
+        "accuracy": 0.9522,
+        "tar_at_far_1pct": 0.9118,
+        "threshold": 0.4828
+      },
+      "centroid": {
+        "auc": 0.9926,
+        "eer": 0.0368,
+        "accuracy": 0.9669,
+        "tar_at_far_1pct": 0.9338,
+        "threshold": 0.4644
+      },
+      "_meta": {
+        "k": 5,
+        "identities": 68,
+        "genuine": 136,
+        "impostor": 136
+      }
+    }
+  },
+  "opencv-sface": {
+    "1": {
+      "nearest": {
+        "auc": 0.9873,
+        "eer": 0.0238,
+        "accuracy": 0.9773,
+        "tar_at_far_1pct": 0.9549,
+        "threshold": 1.0712
+      },
+      "centroid": {
+        "auc": 0.9873,
+        "eer": 0.0238,
+        "accuracy": 0.9773,
+        "tar_at_far_1pct": 0.9549,
+        "threshold": 1.0712
+      },
+      "_meta": {
+        "k": 1,
+        "identities": 244,
+        "genuine": 488,
+        "impostor": 218
+      }
+    },
+    "2": {
+      "nearest": {
+        "auc": 0.9884,
+        "eer": 0.0271,
+        "accuracy": 0.9841,
+        "tar_at_far_1pct": 0.9729,
+        "threshold": 0.9928
+      },
+      "centroid": {
+        "auc": 0.9916,
+        "eer": 0.0207,
+        "accuracy": 0.9841,
+        "tar_at_far_1pct": 0.9759,
+        "threshold": 1.0369
+      },
+      "_meta": {
+        "k": 2,
+        "identities": 166,
+        "genuine": 332,
+        "impostor": 296
+      }
+    },
+    "3": {
+      "nearest": {
+        "auc": 0.9996,
+        "eer": 0.0044,
+        "accuracy": 0.9956,
+        "tar_at_far_1pct": 0.9956,
+        "threshold": 1.0016
+      },
+      "centroid": {
+        "auc": 1.0,
+        "eer": 0.0044,
+        "accuracy": 0.9978,
+        "tar_at_far_1pct": 1.0,
+        "threshold": 1.0232
+      },
+      "_meta": {
+        "k": 3,
+        "identities": 114,
+        "genuine": 228,
+        "impostor": 228
+      }
+    },
+    "4": {
+      "nearest": {
+        "auc": 1.0,
+        "eer": 0.0062,
+        "accuracy": 0.9969,
+        "tar_at_far_1pct": 1.0,
+        "threshold": 0.9761
+      },
+      "centroid": {
+        "auc": 1.0,
+        "eer": 0.0,
+        "accuracy": 1.0,
+        "tar_at_far_1pct": 1.0,
+        "threshold": 0.9876
+      },
+      "_meta": {
+        "k": 4,
+        "identities": 81,
+        "genuine": 162,
+        "impostor": 162
+      }
+    },
+    "5": {
+      "nearest": {
+        "auc": 0.9988,
+        "eer": 0.0147,
+        "accuracy": 0.989,
+        "tar_at_far_1pct": 0.9853,
+        "threshold": 0.9777
+      },
+      "centroid": {
+        "auc": 0.9998,
+        "eer": 0.0074,
+        "accuracy": 0.9926,
+        "tar_at_far_1pct": 0.9926,
+        "threshold": 0.9631
+      },
+      "_meta": {
+        "k": 5,
+        "identities": 68,
+        "genuine": 136,
+        "impostor": 136
+      }
+    }
+  },
+  "fitted_thresholds": {
+    "dlib": 0.4719,
+    "opencv-sface": 1.0119
+  }
+}

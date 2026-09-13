@@ -37,6 +37,19 @@ def get_system(threshold, metric):
     return FaceRecognitionSystem(threshold=threshold, distance_metric=metric)
 
 
+def get_database():
+    """
+    Open the same store the application uses.
+
+    These commands built the JSON store directly, so once the default moved to
+    SQLite, `list` and `stats` reported an empty database while `enroll` was
+    writing to a different one.
+    """
+    from src.database import DEFAULT_DB_PATH
+    from src.sqlite_store import open_database
+    return open_database(DEFAULT_DB_PATH)
+
+
 # --------------------------------------------------
 # CLI group
 # --------------------------------------------------
@@ -82,8 +95,8 @@ def enroll(name, images, allow_multi_face):
 # --------------------------------------------------
 @cli.command()
 @click.argument("image")
-@click.option("--threshold", "-t", default=0.60, type=float,
-              help="Rejection threshold (default: 0.60).")
+@click.option("--threshold", "-t", default=None, type=float,
+              help="Rejection threshold. Default: the engine's own fitted value.")
 @click.option("--metric", "-m", default="euclidean",
               type=click.Choice(["euclidean", "cosine"]),
               help="Distance metric (default: euclidean).")
@@ -153,8 +166,7 @@ def identify(image, threshold, metric, show, save, json_output):
 @cli.command("list")
 def list_enrolled():
     """List all enrolled persons."""
-    from src.database import FaceDatabase
-    db = FaceDatabase()
+    db = get_database()
     names = db.list_enrolled()
     if not names:
         click.echo("Database is empty. Enroll some faces first.")
@@ -173,8 +185,7 @@ def list_enrolled():
 @click.confirmation_option(prompt="Are you sure you want to remove this person?")
 def remove(name):
     """Remove NAME from the database."""
-    from src.database import FaceDatabase
-    db = FaceDatabase()
+    db = get_database()
     if db.remove(name):
         click.echo(f"OK '{name}' removed from database.")
     else:
@@ -187,8 +198,7 @@ def remove(name):
 @cli.command()
 def stats():
     """Show database statistics."""
-    from src.database import FaceDatabase
-    db = FaceDatabase()
+    db = get_database()
     s = db.stats()
     click.echo(f"Total persons    : {s['total_persons']}")
     click.echo(f"Total embeddings : {s['total_embeddings']}")
@@ -203,7 +213,7 @@ def stats():
 # --------------------------------------------------
 @cli.command()
 @click.argument("probe_csv")
-@click.option("--threshold", "-t", default=0.60, type=float)
+@click.option("--threshold", "-t", default=None, type=float)
 @click.option("--metric", "-m", default="euclidean",
               type=click.Choice(["euclidean", "cosine"]))
 @click.option("--save-dir", default="evaluation", help="Directory for reports/plots.")

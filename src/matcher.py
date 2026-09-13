@@ -9,9 +9,28 @@ The **rejection threshold** controls the "Unknown" gate:
   - Euclidean: distance > threshold → Unknown  (recommended: 0.55–0.65)
   - Cosine:    similarity < threshold → Unknown (recommended: 0.40–0.50)
 
-The matcher aggregates multiple enrolled embeddings per person by picking the
-minimum distance (nearest-neighbour strategy). This naturally handles
-intra-class variation across enrolment images.
+When a person is enrolled from several photographs, their embeddings are
+averaged into one representative vector (`aggregation="centroid"`) and the
+query is compared against that.
+
+The alternative — keeping every embedding and taking the distance to the
+closest one — was what this matcher used originally. Measured on held-out LFW
+identities (`python -m ml.aggregation`), averaging is better at every
+enrolment size where the two differ:
+
+    photos enrolled    nearest EER    centroid EER
+    dlib        2          8.44%           6.69%
+    dlib        3          6.14%           5.26%
+    dlib        5          5.15%           3.68%
+    sface       2          2.71%           2.07%
+    sface       5          1.47%           0.74%
+
+They are identical at one photograph, where there is nothing to average.
+Averaging suppresses the per-image noise that a single unlucky enrolment shot
+would otherwise contribute, and a nearest-neighbour rule is only as good as
+the worst photograph someone enrolled.
+
+`aggregation="nearest"` keeps the old behaviour for comparison.
 """
 
 import json
@@ -36,8 +55,15 @@ logger = logging.getLogger(__name__)
 # length (‖v‖ ≈ 1.42). Normalising first shrinks every distance by that factor
 # and makes 0.60 far too permissive — if you change the metric, re-fit the
 # threshold with it.
-DEFAULT_EUCLIDEAN_THRESHOLD = 0.60
+# Fitted with centroid aggregation on validation identities
+# (`python -m ml.aggregation --fit`). Averaging a person's photographs pulls
+# genuine distances in, so the gate moves with it: 0.60 was correct for
+# nearest-neighbour matching and is far too permissive for a centroid.
+DEFAULT_EUCLIDEAN_THRESHOLD = 0.47
 DEFAULT_COSINE_THRESHOLD    = 0.40
+
+# The old value, kept for anyone running aggregation="nearest".
+NEAREST_EUCLIDEAN_THRESHOLD = 0.60
 
 # Optional override written by `python -m ml.calibrate`, so a threshold fitted
 # on your own population takes effect without editing code. Absent by default.
@@ -64,6 +90,25 @@ def calibrated_threshold(metric: str = "euclidean") -> float | None:
         return None
     value = payload.get("fitted_threshold")
     return float(value) if isinstance(value, (int, float)) else None
+
+
+def representative(embeddings: list[np.ndarray]) -> np.ndarray:
+    """
+    One vector standing for a person, from their enrolled photographs.
+
+    Each embedding is L2-normalised before averaging so that no single
+    photograph dominates through having a larger magnitude, and the mean is
+    rescaled to the set's average length so the result stays in the space the
+    threshold was fitted in.
+    """
+    stacked = np.asarray(embeddings, dtype=np.float64)
+    if stacked.ndim == 1:
+        return stacked
+    norms = np.linalg.norm(stacked, axis=1, keepdims=True)
+    unit = stacked / (norms + 1e-10)
+    mean = unit.mean(axis=0)
+    mean /= np.linalg.norm(mean) + 1e-10
+    return mean * float(norms.mean())
 
 
 def _json_safe(value: float) -> float | None:
@@ -187,10 +232,14 @@ class FaceMatcher:
         self,
         threshold: float | None = None,
         metric: str = "euclidean",
+        aggregation: str = "centroid",
     ):
         if metric not in ("euclidean", "cosine"):
             raise ValueError("metric must be 'euclidean' or 'cosine'")
+        if aggregation not in ("centroid", "nearest"):
+            raise ValueError("aggregation must be 'centroid' or 'nearest'")
         self.metric = metric
+        self.aggregation = aggregation
         if threshold is None:
             self.threshold = (
                 DEFAULT_EUCLIDEAN_THRESHOLD
@@ -242,7 +291,7 @@ class FaceMatcher:
         for name, embeddings in database.items():
             if not embeddings:
                 continue
-            scores[name] = min(self._distance(query_embedding, e) for e in embeddings)
+            scores[name] = self._person_distance(query_embedding, embeddings)
 
         if not scores:
             return MatchResult(
@@ -286,6 +335,12 @@ class FaceMatcher:
     # ------------------------------------------------------------------
     # Distance helpers
     # ------------------------------------------------------------------
+
+    def _person_distance(self, query: np.ndarray, embeddings: list[np.ndarray]) -> float:
+        """Distance from a query to one enrolled person's whole photo set."""
+        if self.aggregation == "nearest":
+            return min(self._distance(query, e) for e in embeddings)
+        return self._distance(query, representative(embeddings))
 
     def _distance(self, a: np.ndarray, b: np.ndarray) -> float:
         if self.metric == "euclidean":

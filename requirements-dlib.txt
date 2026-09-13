@@ -1,0 +1,18 @@
+# Optional: the dlib engine (engine="dlib").
+#
+# Not needed for the default pipeline. Installing this requires CMake and a C++
+# compiler (Visual Studio Build Tools on Windows) and takes several minutes to
+# build, which is precisely why the default engine no longer depends on it.
+#
+#   pip install -r requirements-dlib.txt
+#
+# Worth installing if you want to reproduce the dlib-vs-SFace comparison in
+# ml/ or run `python -m ml.prepare`.
+
+face-recognition>=1.2.3
+face-recognition-models>=0.1.0
+
+# face_recognition_models imports pkg_resources, which setuptools removed in
+# version 81. Without this bound every dlib-backed call fails with
+# "ModuleNotFoundError: No module named 'pkg_resources'".
+setuptools<81

@@ -16,12 +16,28 @@ import app as flask_app
 from src.system import EnrollOutcome
 
 
+class FakeMatcher:
+    """The parts of FaceMatcher that app.py reads."""
+    threshold = 1.012
+    metric = "euclidean"
+    aggregation = "centroid"
+
+
 class FakeSystem:
-    """Stands in for FaceRecognitionSystem with predictable behaviour."""
+    """
+    Stands in for FaceRecognitionSystem with predictable behaviour.
+
+    It has to expose everything app.py touches — including `matcher`, since
+    /identify falls back to the engine's own threshold when the request does
+    not supply one.
+    """
+
+    engine_name = "opencv-sface"
 
     def __init__(self):
         self.people: dict[str, int] = {}
         self.faces_in_next_photo = 1
+        self.matcher = FakeMatcher()
 
     # -- enrolment ----------------------------------------------------
     def enroll_from_array(self, name, image, require_single_face=True):
@@ -199,11 +215,31 @@ def test_identify_clamps_absurd_threshold(client, fake):
 
 
 def test_identify_tolerates_bad_threshold(client, fake):
+    """An unparseable threshold falls back to the engine's own, not a literal."""
     res = client.post("/identify", headers=JSON,
                       data={"image": (photo(), "a.jpg"), "threshold": "banana"},
                       content_type="multipart/form-data")
     assert res.status_code == 200
-    assert res.get_json()["threshold_used"] == 0.60
+    assert res.get_json()["threshold_used"] == pytest.approx(FakeMatcher.threshold)
+
+
+def test_identify_without_a_threshold_uses_the_engine_default(client, fake):
+    """
+    Regression: /identify hardcoded 0.60, left over from the dlib engine. With
+    SFace gating at 1.012 that silently rejected valid matches at 0.70.
+    """
+    res = client.post("/identify", headers=JSON,
+                      data={"image": (photo(), "a.jpg")},
+                      content_type="multipart/form-data")
+    assert res.get_json()["threshold_used"] == pytest.approx(FakeMatcher.threshold)
+    assert fake.last_threshold is None      # passed through as "use your own"
+
+
+def test_config_reports_engine_facts(client, fake):
+    body = client.get("/api/config", headers=JSON).get_json()
+    assert body["engine"] == "opencv-sface"
+    assert body["threshold"] == pytest.approx(FakeMatcher.threshold)
+    assert body["aggregation"] == "centroid"
 
 
 def test_identify_response_is_strict_json(client, fake):

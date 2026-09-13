@@ -1,8 +1,9 @@
 # Face Recognition Identification System
 #
-# Builds dlib from source, which is the slow part (~10 minutes) and the reason
-# most free hosts with small build containers fail. Hugging Face Spaces has
-# enough memory; Render's 512 MB free tier does not.
+# Builds in about a minute and needs no compiler: the default engine is
+# YuNet + SFace through opencv-python's DNN module. An earlier version of this
+# file compiled dlib from source, which took ten minutes and exhausted the
+# memory of most small build containers.
 #
 #   docker build -t facerec .
 #   docker run -p 7860:7860 facerec
@@ -11,7 +12,7 @@
 #   FACEREC_HOST    interface to bind
 #   FACEREC_PORT    port
 #   FACEREC_SECRET  Flask secret key
-#   FACEREC_DB      database path — use a .sqlite extension for the
+#   FACEREC_DB      database path — a .sqlite extension selects the
 #                   multi-process-safe backend
 #   FACEREC_DEMO    "1" wipes the database at start-up (see app.py)
 
@@ -32,18 +33,11 @@ RUN mkdir -p /out && cp -r /static/dist /out/dist
 # ------------------------------------------------------------ python build
 FROM python:3.12-slim AS build
 
-# dlib needs a compiler and CMake. No GL/GLib here: the runtime uses the
-# headless OpenCV wheel, which does not link against them.
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        build-essential cmake git \
-        libopenblas-dev liblapack-dev \
-    && rm -rf /var/lib/apt/lists/*
-
 WORKDIR /app
 
-# Runtime dependencies only — see requirements-app.txt. Installing the full
-# development set pulled scipy, pandas, scikit-learn and matplotlib into the
-# image, none of which the server imports.
+# Runtime dependencies only — see requirements-app.txt. The full development
+# set pulls scipy, pandas, scikit-learn and matplotlib, none of which the
+# server imports.
 COPY requirements-app.txt .
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements-app.txt
@@ -51,11 +45,8 @@ RUN pip install --no-cache-dir --upgrade pip \
 # ---------------------------------------------------------------- runtime
 FROM python:3.12-slim
 
-# dlib links against OpenBLAS at runtime. Headless OpenCV needs nothing else.
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        libopenblas0 \
-    && rm -rf /var/lib/apt/lists/*
-
+# No apt packages: the headless OpenCV wheel is self-contained, and with the
+# default engine there is no dlib to link against.
 COPY --from=build /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
 COPY --from=build /usr/local/bin /usr/local/bin
 
@@ -67,8 +58,8 @@ WORKDIR /app
 # duplicates the whole application layer.
 COPY --chown=appuser:appuser . .
 COPY --from=frontend --chown=appuser:appuser /out/dist ./static/dist
-RUN chmod +x /app/docker-entrypoint.sh
-RUN mkdir -p /app/database /app/models \
+RUN chmod +x /app/docker-entrypoint.sh \
+    && mkdir -p /app/database /app/models \
     && chown appuser:appuser /app/database /app/models
 USER appuser
 
@@ -80,11 +71,10 @@ ENV FACEREC_HOST=0.0.0.0 \
 
 EXPOSE 7860
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=90s \
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s \
     CMD python -c "import urllib.request;urllib.request.urlopen('http://127.0.0.1:7860/health')"
 
-# Two workers, which is precisely why the store had to stop being a JSON file:
-# the old one silently lost an enrolment whenever a second worker wrote.
-# --timeout 120 covers the first request, which loads the dlib models.
+# Two workers, which is why the store had to stop being a JSON file: the old
+# one silently lost an enrolment whenever a second worker wrote.
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
 CMD ["gunicorn", "--bind", "0.0.0.0:7860", "--workers", "2", "--timeout", "120", "app:app"]

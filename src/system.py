@@ -10,10 +10,10 @@ you need BGR for `cv2.imwrite`/`cv2.imshow`.
 """
 
 import os
-import numpy as np
-import cv2
-import face_recognition
 import logging
+
+import cv2
+import numpy as np
 from dataclasses import dataclass
 
 from src.detector import FaceDetector
@@ -67,15 +67,22 @@ class FaceRecognitionSystem:
         distance_metric: str = "euclidean",
         threshold: float | None = None,
         db_path: str | None = None,
-        engine: str = "dlib",
+        engine: str = "opencv",
     ):
         """
         `engine` selects the detection + embedding backend:
 
-          "dlib"    HOG detector + dlib ResNet-128 (default, no downloads)
-          "opencv"  YuNet + SFace through OpenCV's own API — more accurate at
-                    every operating point and ~6x faster, at the cost of a
-                    one-off 37 MB model download. See src/opencv_engine.py.
+          "opencv"  YuNet detection + SFace embeddings through OpenCV's own
+                    API (default). Downloads 37 MB of ONNX weights once, then
+                    needs nothing beyond opencv-python.
+          "dlib"    HOG detector + dlib ResNet-128. Requires the
+                    face_recognition package, which needs CMake and a C++
+                    compiler to build.
+
+        "opencv" is the default because it is both more accurate and far easier
+        to install. Measured on held-out LFW identities with three enrolment
+        photographs each, it reaches 0.44% EER against dlib's 6.14%
+        (`python -m ml.aggregation`).
 
         Each engine carries its own default threshold: the two produce
         embeddings in different spaces, so dlib's 0.60 is meaningless to SFace.
@@ -100,7 +107,8 @@ class FaceRecognitionSystem:
 
         # open_database picks SQLite for .db/.sqlite paths and JSON otherwise,
         # so a multi-process deployment selects a safe backend by filename.
-        self.database = open_database(db_path) if db_path else FaceDatabase()
+        from src.database import DEFAULT_DB_PATH
+        self.database = open_database(db_path or DEFAULT_DB_PATH)
         self.matcher  = FaceMatcher(threshold=threshold, metric=distance_metric)
 
         # Comparing vectors from two different models yields nonsense, so fail
@@ -113,6 +121,12 @@ class FaceRecognitionSystem:
                 f"uses '{self.engine_name}'. Re-enrol everyone with the new engine, or "
                 f"construct the system with engine matching the stored data."
             )
+
+    @staticmethod
+    def _load(image_path: str) -> np.ndarray:
+        """Read an image file as RGB, without requiring dlib."""
+        from PIL import Image
+        return np.array(Image.open(image_path).convert("RGB"))
 
     # ------------------------------------------------------------------
     # Enrollment
@@ -134,7 +148,7 @@ class FaceRecognitionSystem:
         if not os.path.exists(image_path):
             raise FileNotFoundError(f"Image not found: {image_path}")
 
-        image = face_recognition.load_image_file(image_path)
+        image = self._load(image_path)
         return self.enroll_from_array(name, image, require_single_face=require_single_face)
 
     def enroll_from_directory(
@@ -206,7 +220,7 @@ class FaceRecognitionSystem:
         if not os.path.exists(image_path):
             raise FileNotFoundError(f"Image not found: {image_path}")
 
-        image = face_recognition.load_image_file(image_path)
+        image = self._load(image_path)
         return self._identify(image, threshold=threshold)
 
     def identify_from_array(

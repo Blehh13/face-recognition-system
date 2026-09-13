@@ -9,10 +9,10 @@ matching what `face_recognition` expects. Callers holding OpenCV output
 (BGR) must convert before calling in — see `bgr_to_rgb`.
 """
 
-import face_recognition
-import numpy as np
-import cv2
 import logging
+
+import cv2
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +41,25 @@ class FaceDetector:
     # Public API
     # ------------------------------------------------------------------
 
+    @staticmethod
+    def _dlib():
+        """
+        Import face_recognition on demand.
+
+        dlib needs a C++ toolchain to install, and since the default engine is
+        now YuNet + SFace most users never touch this path. Importing lazily
+        means they never need the toolchain either.
+        """
+        try:
+            import face_recognition
+        except ImportError as exc:
+            raise ImportError(
+                "The 'dlib' engine needs the face_recognition package "
+                "(pip install face-recognition), which requires CMake and a C++ "
+                "compiler. The default engine='opencv' has no such requirement."
+            ) from exc
+        return face_recognition
+
     def detect(self, image: np.ndarray) -> list[tuple[int, int, int, int]]:
         """
         Detect faces in an RGB image.
@@ -55,12 +74,13 @@ class FaceDetector:
         list of (top, right, bottom, left) tuples — face bounding boxes.
         """
         rgb = self.to_rgb(image)
-        return face_recognition.face_locations(
+        return self._dlib().face_locations(
             rgb, number_of_times_to_upsample=self.upscale, model=self.model
         )
 
     def detect_from_path(self, image_path: str) -> tuple[np.ndarray, list]:
         """Load an image from disk and detect faces."""
+        face_recognition = self._dlib()
         image = face_recognition.load_image_file(image_path)  # RGB array
         locations = face_recognition.face_locations(
             image, number_of_times_to_upsample=self.upscale, model=self.model

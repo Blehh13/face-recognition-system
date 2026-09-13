@@ -64,9 +64,14 @@ _MODELS = {
     ),
 }
 
-# Fitted on the LFW validation identities, Euclidean distance between
-# L2-normalised SFace features. See ml/README.md.
-DEFAULT_SFACE_THRESHOLD = 1.17
+# Fitted on LFW validation identities with centroid aggregation
+# (`python -m ml.aggregation --fit`), Euclidean distance between L2-normalised
+# SFace features.
+#
+# On unit vectors this is equivalent to a cosine threshold: for ‖a‖=‖b‖=1,
+# ‖a-b‖² = 2 - 2·cos(a,b), so d ≤ 1.012 is exactly cos ≥ 0.488. The two
+# rank identically; Euclidean is used so one code path serves both engines.
+DEFAULT_SFACE_THRESHOLD = 1.012
 
 
 class ModelsUnavailable(RuntimeError):

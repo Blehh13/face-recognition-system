@@ -55,11 +55,60 @@ def test_per_call_threshold_overrides_the_default(database):
     assert matcher.threshold == 0.01
 
 
-def test_nearest_neighbour_across_multiple_embeddings():
+def test_nearest_aggregation_uses_the_closest_photo():
+    """aggregation="nearest" keeps the pre-centroid behaviour."""
     db = {"Alice": [vec(50), vec(1)]}
-    result = FaceMatcher(threshold=0.6).match(vec(1), db)
+    result = FaceMatcher(threshold=0.6, aggregation="nearest").match(vec(1), db)
     assert result.is_known
     assert result.distance == pytest.approx(0.0, abs=1e-9)
+
+
+def test_centroid_is_the_default_and_averages_the_set():
+    """
+    The default compares against the mean of a person's photographs, so an
+    exact match to one enrolled photo no longer gives distance zero.
+    """
+    from src.matcher import representative
+
+    db = {"Alice": [vec(50), vec(1)]}
+    result = FaceMatcher(threshold=2.0).match(vec(1), db)
+    assert result.name == "Alice"
+    expected = float(np.linalg.norm(vec(1) - representative(db["Alice"])))
+    assert result.distance == pytest.approx(expected)
+    assert result.distance > 0
+
+
+def test_centroid_beats_nearest_on_a_noisy_enrolment():
+    """
+    Averaging suppresses one bad enrolment photograph; nearest-neighbour is
+    only ever as good as the worst photo someone enrolled. This is the effect
+    measured on LFW in ml/aggregation.py.
+    """
+    true = vec(1)
+    noisy = [true + 0.25 * vec(s) for s in (11, 12, 13)]
+    impostor = vec(99)
+
+    centroid = FaceMatcher(threshold=10.0, aggregation="centroid")
+    nearest = FaceMatcher(threshold=10.0, aggregation="nearest")
+
+    # Margin between a genuine query and an impostor, under each strategy.
+    def margin(matcher):
+        db = {"Alice": noisy}
+        return (matcher.match(impostor, db).distance
+                - matcher.match(true, db).distance)
+
+    assert margin(centroid) > margin(nearest)
+
+
+def test_aggregation_is_validated():
+    with pytest.raises(ValueError):
+        FaceMatcher(aggregation="median")
+
+
+def test_representative_of_one_embedding_is_itself():
+    from src.matcher import representative
+    v = vec(3)
+    np.testing.assert_allclose(representative([v]), v)
 
 
 def test_person_with_no_embeddings_is_skipped():

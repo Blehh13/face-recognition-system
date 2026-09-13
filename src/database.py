@@ -20,7 +20,12 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
+# The JSON store remains for inspection and for single-process use; the
+# default path now ends in .sqlite so src.sqlite_store.open_database selects
+# the multi-process-safe backend. A JSON path still works and still gets this
+# class.
 DB_PATH = os.path.join(os.path.dirname(__file__), "..", "database", "enrolled_faces.json")
+DEFAULT_DB_PATH = os.path.join(os.path.dirname(__file__), "..", "database", "enrolled_faces.sqlite")
 
 EMBEDDING_DIM = 128          # dlib ResNet output size
 _BYTES_PER_EMBEDDING = EMBEDDING_DIM * 8   # float64

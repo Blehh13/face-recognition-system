@@ -11,16 +11,32 @@ evaluation of how well it actually works.
 
 ## Measured performance
 
-Benchmarked on **LFW**: 462 identities held out of training entirely, 6,000
-balanced verification pairs. Protocol and code in [`ml/README.md`](ml/README.md).
+Two evaluations, both reproducible from this repository.
 
-| | accuracy | EER | FAR | FRR |
-|---|---:|---:|---:|---:|
-| **dlib ResNet-128 @ threshold 0.60** (default) | **97.10%** | 2.67% | 0.63% | 5.17% |
-| YuNet + SFace (optional engine) | **98.50%** | 1.83% | — | — |
+**1 — The committed test set** ([`Test/`](Test/)): 5 people enrolled from 3
+public-domain photographs each, then 8 probes identified against them. Every
+probe is a *different* photograph from the ones enrolled, and 3 of the 8 are
+people who were never enrolled and must be rejected.
 
-These are measurements from `python -m ml.benchmark`, not figures copied from a
-model card. The raw output is committed in [`ml/results/`](ml/results/).
+| | accuracy | precision | recall | F1 | FAR | FRR |
+|---|---:|---:|---:|---:|---:|---:|
+| YuNet + SFace, threshold 1.012 | **100%** | 1.00 | 1.00 | 1.00 | 0% | 0% |
+
+Reproduce with `python Test/run_test.py`; per-probe distances in
+[`Test/results/results.md`](Test/results/results.md). Eight probes cannot
+separate 100% from 90% — see the caveats in [`Test/README.md`](Test/README.md).
+
+**2 — LFW, at scale** ([`ml/`](ml/)): identities split so that nobody in the
+evaluation was ever used to fit anything. Enrolling 3 photographs per person
+and averaging them:
+
+| engine | EER | notes |
+|---|---:|---|
+| **YuNet + SFace** (default) | **0.44%** | detection + 5-point alignment + 128-d embedding |
+| dlib ResNet-128 (optional) | 6.14% | needs a C++ toolchain to install |
+
+Produced by `python -m ml.aggregation`. Raw output in
+[`ml/results/`](ml/results/).
 
 ---
 
@@ -94,10 +110,11 @@ takes the same path as an upload. The preview is mirrored to read like a
 mirror but the capture is un-mirrored before upload, or every stored face would
 be a flipped version of the person.
 
-**Advisory liveness detection.** Face matching cannot tell a person from a
-photograph of that person, so a printed photo held to the camera authenticates
-as whoever is in it. MiniFASNetV2 (Apache 2.0) now scores each face and flags
-likely presentation attacks.
+**Advisory liveness detection — not a security control.** Face matching cannot
+tell a person from a photograph of that person, so a printed photo held to the
+camera authenticates as whoever is in it. MiniFASNetV2 (Apache 2.0) scores each
+face and flags likely presentation attacks, but **this system does not provide
+dependable anti-spoofing** and must not be relied on for one.
 
 It warns rather than blocks, deliberately. Genuine photographs score ~0.62-0.77
 live here rather than the 0.95+ a confident detector would give, and brightening
@@ -110,30 +127,39 @@ deployment hardware.
 
 ---
 
-## Three findings worth reading
+## Four findings worth reading
 
-**1. The system's own threshold was never validated — now it is.** The 0.60
-rejection threshold was inherited from `face_recognition`'s documentation.
-Fitting it from data lands on **0.605**, so the constant turns out to be
-correct. That is a negative result, and it is the useful kind: an assumption
-became a measurement.
+**1. Averaging a person's photographs beats keeping them all.** The matcher
+originally compared a query against each enrolled photograph and took the
+closest. Replacing that with the mean of a person's L2-normalised embeddings
+cut the error rate at every enrolment size where the two differ — dlib 8.44% →
+6.69% EER at two photographs, SFace 1.47% → 0.74% at five. A
+nearest-neighbour rule is only ever as good as the worst photograph somebody
+enrolled. Measured by `python -m ml.aggregation`.
 
-**2. Training a model on LFW does not beat the pre-trained one.** Two tracks
-were trained — a CNN + ArcFace from scratch, and an MLP head over dlib's
-frozen embeddings. Both lose (AUC 0.906 and 0.988 against 0.995). LFW's 5,819
-training images cannot compete with the ~3M faces dlib was trained on; the
-scratch model reached 99.6% training accuracy while its validation AUC fell.
-A 32-configuration ablation found **0 of 32** heads beating plain dlib.
-Reported rather than buried, with the plots to back it.
+**2. The threshold is a property of the pipeline, not a constant.** 0.60 is
+dlib's documented default and is correct for nearest-neighbour matching.
+Switching to averaging moves the optimum to 0.47 for dlib and 1.012 for SFace.
+Both are fitted on validation identities and reported once on test, so the
+number is measured rather than inherited.
 
-**3. The demo used to claim ~100% accuracy while actually producing F1 = 0.**
-It evaluated on synthetic cartoon faces that dlib mostly cannot detect, and
-silently identified one person as another. `demo.py` now has three explicit
-modes and the offline one **refuses to report accuracy**, explaining why.
+**3. Training a model on LFW does not beat the pre-trained one.** A CNN with
+ArcFace from scratch and an MLP head over frozen embeddings both lost. LFW's
+5,819 training images cannot compete with the millions these backbones saw; the
+scratch model reached 99.6% training accuracy while its validation AUC fell,
+and a 32-configuration ablation found **0 of 32** heads beating the baseline.
+Reported rather than buried.
+
+**4. The demo used to claim ~100% accuracy while actually producing F1 = 0.**
+It evaluated on synthetic cartoon faces that the detector mostly cannot find,
+and silently identified one person as another. `demo.py` now has explicit modes
+and the offline one **refuses to report accuracy**, explaining why.
 
 ---
 
 ## Quick start
+
+No compiler required. The default engine runs through OpenCV's own DNN module.
 
 ```bash
 pip install -r requirements.txt
@@ -141,17 +167,24 @@ cd frontend && npm install && npm run build && cd ..
 python app.py                       # http://127.0.0.1:5000
 ```
 
+On first identification the two ONNX model files (~37 MB) download
+automatically into `models/`.
+
 ```bash
-python -m pytest -q                 # 100 tests
-python cli.py enroll "Alice" photos/alice1.jpg
+python -m pytest -q                 # 140 tests
+python Test/run_test.py             # the committed test set, with metrics
+python cli.py enroll "Alice" photos/alice1.jpg photos/alice2.jpg
 python cli.py identify photo.jpg --show
-python demo.py --lfw                # real faces, end to end
 ```
 
-Verified on Python 3.14.6 / Windows 11. If you hit
-`ModuleNotFoundError: No module named 'pkg_resources'`, run
-`pip install "setuptools<81"` — setuptools 81 removed it and
-`face_recognition_models` imports it at load.
+Or with Docker, which builds the frontend too:
+
+```bash
+docker build -t facerec .           # ~1 minute
+docker run -p 7860:7860 facerec
+```
+
+Verified on Python 3.14.6 / Windows 11.
 
 ---
 
@@ -159,17 +192,18 @@ Verified on Python 3.14.6 / Windows 11. If you hit
 
 | Feature | Details |
 |---|---|
-| **Face detection** | HOG or CNN via dlib; optionally YuNet (ONNX, 0 misses on the LFW test split) |
-| **Face embeddings** | dlib ResNet-128, or SFace via OpenCV's own API |
-| **Matching** | Nearest-neighbour Euclidean distance, with cosine available |
+| **Face detection** | YuNet (ONNX, MIT) by default — 0 misses on 2,223 LFW test images; dlib HOG/CNN optional |
+| **Face embeddings** | SFace 128-d (ONNX, Apache 2.0) by default; dlib ResNet-128 optional |
+| **Matching** | Euclidean distance to each person's averaged embedding (equivalent to cosine on unit vectors) |
 | **Unknown rejection** | Threshold gate, calibrated against data rather than assumed |
 | **Confidence** | Calibrated so the threshold sits at exactly 0.50 — above 50% means accepted |
 | **Web UI** | React 18 + Vite, served by Flask |
 | **CLI** | `click`-based: enroll / identify / list / remove / stats / evaluate |
 | **Evaluation** | AUC, EER, TAR@FAR, FAR/FRR, confusion matrix, threshold sweep |
-| **Tests** | 100 pytest cases; every bug fixed here has a named regression test |
+| **Tests** | 140 pytest cases; every bug fixed here has a named regression test |
 | **Training** | PyTorch + ArcFace on identity-disjoint LFW splits ([`ml/`](ml/)) |
-| **Pluggable engines** | `dlib` (default) or `opencv` ([`docs/UPSTREAM.md`](docs/UPSTREAM.md)) |
+| **Storage** | SQLite by default (safe across processes); JSON store retained for inspection |
+| **Pluggable engines** | `opencv` (default) or `dlib` ([`docs/UPSTREAM.md`](docs/UPSTREAM.md)) |
 
 ### Safety properties worth knowing
 
@@ -184,77 +218,84 @@ Verified on Python 3.14.6 / Windows 11. If you hit
 
 ## Model & Architecture
 
-### Model Used
-
-**dlib ResNet Face Recognition Model** (via `face_recognition` library by Adam Geitgey)
-
-- Architecture: Modified ResNet with metric-learning loss
-- Output: 128-dimensional embedding (L2-normalised)
-- Training data: ~3 million faces
-- LFW accuracy: **99.38%** (human-level parity)
-- License: Boost (free for all use)
-- Cost: **$0 / ₹0**
-
-### Pipeline
-
 ```
-Input Image
-    │
-    ▼
-┌─────────────────────┐
-│   Face Detection    │  HOG or CNN → bounding boxes (top, right, bottom, left)
-│   (FaceDetector)    │
-└─────────────────────┘
-    │
-    ▼
-┌─────────────────────┐
-│   Face Alignment &  │  68-point landmark detection → affine alignment
-│   Embedding         │  → 128-d dlib ResNet encoding
-│   (FaceEmbedder)    │
-└─────────────────────┘
-    │
-    ▼
-┌─────────────────────┐
-│   Database Lookup   │  JSON-backed persistent storage
-│   (FaceDatabase)    │  Base64-encoded float64 arrays
-└─────────────────────┘
-    │
-    ▼
-┌─────────────────────┐
-│   Nearest-Neighbour │  Euclidean distance to all enrolled embeddings
-│   Matching          │  Best match per person (min distance)
-│   (FaceMatcher)     │
-└─────────────────────┘
-    │
-    ▼
-┌─────────────────────┐
-│   Threshold Gate    │  distance ≤ 0.60 → Known (named)
-│   (Unknown Reject)  │  distance  > 0.60 → Unknown
-└─────────────────────┘
-    │
-    ▼
-MatchResult(name, distance, similarity, confidence, is_known)
+photograph
+    |
+    v  YuNet (ONNX, MIT)           detection + 5 facial landmarks
+    |
+    v  similarity transform        align to SFace's canonical 112x112
+    |
+    v  SFace (ONNX, Apache 2.0)    128-d L2-normalised embedding
+    |
+    v  enrolment: average a person's embeddings into one vector
+    |  identification: Euclidean distance to each enrolled person
+    |
+    v  threshold gate              d <= 1.012 -> named,  d > 1.012 -> Unknown
 ```
+
+### Why these models
+
+| | choice | why |
+|---|---|---|
+| Detection | **YuNet** | 227 KB, MIT, found a face in 2,223/2,223 LFW test images, and returns the five landmarks alignment needs |
+| Embedding | **SFace** | 37 MB, Apache 2.0, 0.44% EER on held-out identities against dlib's 6.14% |
+| Runtime | **opencv-python** | both run through `cv2.FaceDetectorYN` / `cv2.FaceRecognizerSF`, already a dependency — no extra package, no compiler |
+
+**Alignment is not optional.** Feeding SFace an unaligned centre crop instead
+of the landmark-aligned one costs about four points of accuracy (98.5% → 94.6%
+on LFW verification pairs). The first port of this engine scored *worse* than
+dlib for exactly that reason.
+
+**dlib remains available** as `engine="dlib"` and is what the `ml/` benchmarks
+compare against, but it is no longer a dependency: installing it needs CMake
+and a C++ compiler. Run `pip install -r requirements-dlib.txt` if you want it.
+
+### Distance metric
+
+Euclidean distance on L2-normalised embeddings. For unit vectors this is
+monotonically equivalent to cosine similarity —
+
+    ||a - b||^2 = 2 - 2*cos(a, b)
+
+— so the two rank identically and a threshold in one converts exactly to the
+other: `d <= 1.012` is `cos >= 0.488`. One code path then serves both engines,
+including dlib, whose vectors are *not* unit length and whose threshold
+therefore lives in a different space.
 
 ---
 
 ## Matching Threshold
 
-### Default: `0.60` (Euclidean distance)
+**Default: 1.012** (Euclidean, L2-normalised SFace embeddings, centroid
+enrolment). Equivalent to cosine similarity >= 0.488.
 
-| Threshold | FAR (False Accept) | FRR (False Reject) | Behavior |
-|---|---|---|---|
-| 0.40 | Very Low | High | Very strict — many unknowns |
-| **0.55** | Low | Low-medium | Conservative, recommended |
-| **0.60** | Medium | Low | **Default** — good balance |
-| 0.65 | Medium-high | Very low | Permissive |
-| 0.70+ | High | Very low | Too permissive |
+Not chosen by hand. `python -m ml.aggregation --fit` enrols LFW *validation*
+identities at one to five photographs each, sweeps the threshold, and takes the
+value that works across enrolment sizes. Those identities appear in neither
+training nor the test split, so the number is not fitted to what it is scored
+on.
 
-The threshold was chosen based on dlib's official recommendation and the standard used by face_recognition library benchmarks. Run the threshold sweep to find the optimal value for your specific dataset:
+| engine | aggregation | fitted threshold |
+|---|---|---:|
+| YuNet + SFace | centroid | **1.012** |
+| dlib | centroid | 0.472 |
+| dlib | nearest | 0.600 (the library default) |
 
-```bash
-python cli.py evaluate probes.csv --sweep
-```
+The threshold moves with the aggregation strategy, which is why there is no
+single "correct" number to quote: averaging a person's photographs pulls
+genuine distances inward, so the gate must move with them.
+
+Measured error rates near the operating point (validation identities,
+`ml/results/error_curves.json`):
+
+| threshold | strangers accepted | genuine faces missed |
+|---:|---:|---:|
+| 0.75 | 0% | 48% |
+| **1.012** | **~0%** | **~4%** |
+| 1.22 | 73% | 0.6% |
+
+The interface reads this curve from `/api/config` and states the consequence of
+whatever the slider is set to, rather than showing a bare number.
 
 ---
 
@@ -456,7 +497,7 @@ python -m pytest -q          # 65 tests
 
 | File | Covers |
 |---|---|
-| `test_matcher.py` | nearest-neighbour matching, threshold gating, confidence calibration, JSON safety |
+| `test_matcher.py` | centroid vs nearest aggregation, threshold gating, confidence calibration, JSON safety |
 | `test_database.py` | round-trips, atomic writes, concurrent enrolment, corrupt-payload handling |
 | `test_api.py` | every HTTP route and error path, with recognition stubbed so it runs without dlib |
 | `test_pipeline.py` | the real dlib pipeline on a real photograph; skips itself if models are absent |
@@ -491,10 +532,9 @@ All key parameters can be overridden in `FaceRecognitionSystem`:
 from src.system import FaceRecognitionSystem
 
 sys_ = FaceRecognitionSystem(
-    detection_model="hog",    # "hog" (CPU-fast) or "cnn" (GPU-accurate)
-    embedding_model="large",  # "large" (68-pt) or "small" (5-pt, faster)
+    engine="opencv",          # "opencv" (YuNet + SFace) or "dlib"
     distance_metric="euclidean",  # "euclidean" or "cosine"
-    threshold=0.60,           # Unknown rejection threshold
+    threshold=None,           # None -> the engine's fitted default (1.012)
 )
 ```
 

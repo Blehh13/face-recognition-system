@@ -6,9 +6,9 @@ library) to produce 128-dimensional L2-normalised embeddings. The model was
 pre-trained on ~3 million faces and achieves 99.38% accuracy on LFW.
 """
 
-import face_recognition
-import numpy as np
 import logging
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +53,8 @@ class FaceEmbedder:
         -------
         list of np.ndarray, each of shape (128,)
         """
-        encodings = face_recognition.face_encodings(
+        from src.detector import FaceDetector
+        encodings = FaceDetector._dlib().face_encodings(
             image,
             known_face_locations=face_locations,
             num_jitters=1,          # 1 = fast; increase for better accuracy
@@ -67,7 +68,8 @@ class FaceEmbedder:
         face_locations: list[tuple] | None = None,
     ) -> list[np.ndarray]:
         """Load image from disk and compute embeddings."""
-        image = face_recognition.load_image_file(image_path)  # RGB
+        from src.detector import FaceDetector
+        image = FaceDetector._dlib().load_image_file(image_path)  # RGB
         return self.embed(image, face_locations)
 
     def embed_single(

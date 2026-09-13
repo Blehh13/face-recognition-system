@@ -1,10 +1,10 @@
 {
   "summary": {
-    "generated": "2026-09-13 18:06 UTC",
-    "engine": "dlib",
-    "threshold": 0.6,
+    "generated": "2026-09-13 20:01 UTC",
+    "engine": "opencv",
+    "threshold": 1.012,
     "people_enrolled": 5,
-    "enrolment_photos": 10,
+    "enrolment_photos": 14,
     "probes": 8,
     "genuine_probes": 5,
     "impostor_probes": 3,
@@ -25,11 +25,11 @@
       "expected": "Buzz Aldrin",
       "predicted": "Buzz Aldrin",
       "correct": true,
-      "distance": 0.5582,
-      "confidence": 0.5247,
+      "distance": 0.5952,
+      "confidence": 0.6652,
       "runner_up": {
         "name": "Sally Ride",
-        "distance": 0.5803
+        "distance": 1.3008
       }
     },
     {
@@ -37,11 +37,11 @@
       "expected": "Grace Hopper",
       "predicted": "Grace Hopper",
       "correct": true,
-      "distance": 0.5259,
-      "confidence": 0.5447,
+      "distance": 0.6961,
+      "confidence": 0.6208,
       "runner_up": {
         "name": "Katherine Johnson",
-        "distance": 0.5989
+        "distance": 1.2656
       }
     },
     {
@@ -49,11 +49,11 @@
       "expected": "Katherine Johnson",
       "predicted": "Katherine Johnson",
       "correct": true,
-      "distance": 0.3369,
-      "confidence": 0.6776,
+      "distance": 0.8364,
+      "confidence": 0.5639,
       "runner_up": {
-        "name": "Grace Hopper",
-        "distance": 0.6499
+        "name": "Buzz Aldrin",
+        "distance": 1.2584
       }
     },
     {
@@ -61,11 +61,11 @@
       "expected": "Mae Jemison",
       "predicted": "Mae Jemison",
       "correct": true,
-      "distance": 0.3561,
-      "confidence": 0.6627,
+      "distance": 0.8424,
+      "confidence": 0.5616,
       "runner_up": {
-        "name": "Katherine Johnson",
-        "distance": 0.7016
+        "name": "Grace Hopper",
+        "distance": 1.2999
       }
     },
     {
@@ -73,11 +73,11 @@
       "expected": "Sally Ride",
       "predicted": "Sally Ride",
       "correct": true,
-      "distance": 0.0735,
-      "confidence": 0.9186,
+      "distance": 0.9935,
+      "confidence": 0.5064,
       "runner_up": {
-        "name": "Katherine Johnson",
-        "distance": 0.694
+        "name": "Buzz Aldrin",
+        "distance": 1.3203
       }
     },
     {
@@ -85,11 +85,11 @@
       "expected": "Unknown",
       "predicted": "Unknown",
       "correct": true,
-      "distance": 0.748,
-      "confidence": 0.4214,
+      "distance": 1.2766,
+      "confidence": 0.4171,
       "runner_up": {
-        "name": "Sally Ride",
-        "distance": 0.7839
+        "name": "Grace Hopper",
+        "distance": 1.3351
       }
     },
     {
@@ -97,11 +97,11 @@
       "expected": "Unknown",
       "predicted": "Unknown",
       "correct": true,
-      "distance": 0.6314,
-      "confidence": 0.4822,
+      "distance": 1.2654,
+      "confidence": 0.4203,
       "runner_up": {
-        "name": "Sally Ride",
-        "distance": 0.6522
+        "name": "Buzz Aldrin",
+        "distance": 1.3148
       }
     },
     {
@@ -109,11 +109,11 @@
       "expected": "Unknown",
       "predicted": "Unknown",
       "correct": true,
-      "distance": 0.6697,
-      "confidence": 0.4613,
+      "distance": 1.2418,
+      "confidence": 0.4272,
       "runner_up": {
         "name": "Sally Ride",
-        "distance": 0.7193
+        "distance": 1.2548
       }
     }
   ]

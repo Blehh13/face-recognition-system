@@ -24,6 +24,32 @@ model card. The raw output is committed in [`ml/results/`](ml/results/).
 
 ---
 
+## The interface
+
+Identifying a face that matches an enrolled person — green border, the name,
+and the distance/similarity/confidence behind it:
+
+![Identifying a known face](docs/screenshots/identify-match.png)
+
+A face that clears detection but not the rejection threshold. The amber border
+and "Not recognised" are deliberately distinct from an error state: the system
+worked, the person simply is not enrolled.
+
+![A face that is not recognised](docs/screenshots/identify-unknown.png)
+
+A photo containing more than one face is refused at enrolment rather than
+storing every face under one name, which would silently poison that identity:
+
+![A group photo being refused](docs/screenshots/group-photo-refused.png)
+
+The empty state, and the same layout at phone width:
+
+| First run | 390px |
+|---|---|
+| ![Empty state](docs/screenshots/empty-state.png) | ![Mobile layout](docs/screenshots/mobile.png) |
+
+---
+
 ## Three findings worth reading
 
 **1. The system's own threshold was never validated — now it is.** The 0.60
@@ -96,7 +122,7 @@ Verified on Python 3.14.6 / Windows 11. If you hit
 
 ---
 
-## 🧠 Model & Architecture
+## Model & Architecture
 
 ### Model Used
 
@@ -152,7 +178,7 @@ MatchResult(name, distance, similarity, confidence, is_known)
 
 ---
 
-## 🎯 Matching Threshold
+## Matching Threshold
 
 ### Default: `0.60` (Euclidean distance)
 
@@ -172,7 +198,7 @@ python cli.py evaluate probes.csv --sweep
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 face-recognition-system/
@@ -213,7 +239,7 @@ face-recognition-system/
 
 ---
 
-## 🚀 Quick Start
+## Detailed setup and usage
 
 ### 1. Install dependencies
 
@@ -310,7 +336,7 @@ python cli.py stats
 
 ---
 
-## 📊 Evaluation
+## Evaluation
 
 ### How to produce numbers
 
@@ -361,7 +387,7 @@ Two findings worth stating plainly:
 
 ---
 
-## 🧪 Tests
+## Tests
 
 ```bash
 pip install pytest
@@ -379,7 +405,7 @@ Each regression above has a named test, so the bugs they describe cannot return 
 
 ---
 
-## ⚠️ Known Failure Cases
+## Known Failure Cases
 
 | Scenario | Issue | Mitigation |
 |---|---|---|
@@ -397,7 +423,7 @@ Each regression above has a named test, so the bugs they describe cannot return 
 
 ---
 
-## 🔧 Configuration
+## Configuration
 
 All key parameters can be overridden in `FaceRecognitionSystem`:
 
@@ -414,7 +440,7 @@ sys_ = FaceRecognitionSystem(
 
 ---
 
-## 🔮 Future Improvements
+## Future Improvements
 
 1. **Better model**: Replace dlib with ArcFace / FaceNet (InsightFace) for higher accuracy
 2. **GPU acceleration**: Enable CUDA for CNN detection + embedding
@@ -427,7 +453,7 @@ sys_ = FaceRecognitionSystem(
 
 ---
 
-## 💡 API Reference
+## API Reference
 
 ### `FaceRecognitionSystem`
 
@@ -478,7 +504,7 @@ is now `null` with a `no_candidates: true` flag.
 
 ---
 
-## 📦 Dependencies (All Free)
+## Dependencies (All Free)
 
 | Package | Purpose | License |
 |---|---|---|
@@ -497,7 +523,7 @@ is now `null` with a `no_candidates: true` flag.
 
 ---
 
-## 🏗️ How to add real photos
+## How to add real photos
 
 1. Create a folder per person:
    ```

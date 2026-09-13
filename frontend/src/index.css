@@ -862,3 +862,18 @@ input {
   color: var(--danger);
   margin-bottom: 6px;
 }
+
+/*
+ * Liveness caution. Worded and styled as a caution rather than a rejection
+ * because the detector is advisory: see src/liveness.py for why a single
+ * MiniFASNet score is not strong enough to refuse someone on.
+ */
+.spoof-warning {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-left: 3px solid var(--warning);
+  background: var(--muted);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--text);
+}

@@ -111,6 +111,13 @@ export default function ResultsPanel({ data }) {
                   {' · '}
                   confidence {formatPercent(face.confidence)}
                 </div>
+                {face.liveness?.suspicious && (
+                  <p className="spoof-warning">
+                    This may be a photo of a photo rather than a live person
+                    (liveness {Math.round(face.liveness.live_score * 100)}%).
+                    Advisory only — the match above still stands.
+                  </p>
+                )}
                 <Candidates
                   candidates={face.candidates}
                   threshold={face.threshold_used ?? threshold}

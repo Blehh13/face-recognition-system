@@ -54,6 +54,27 @@ ALLOWED_FORMATS = {"JPEG", "PNG", "BMP", "WEBP", "GIF", "TIFF"}
 
 # Lazy-init the system (heavy import: dlib)
 _system = None
+_liveness = None
+_liveness_failed = False
+
+
+def get_liveness():
+    """
+    Return the liveness detector, or None when its weights are unavailable.
+
+    Advisory only: a low score annotates the result, it never blocks a match.
+    See src/liveness.py for why that is the right call on the current numbers.
+    """
+    global _liveness, _liveness_failed
+    if _liveness is None and not _liveness_failed:
+        try:
+            from src.liveness import LivenessDetector
+            _liveness = LivenessDetector()
+            logger.info("Liveness detector loaded (advisory).")
+        except Exception as exc:  # noqa: BLE001 - absence is a normal state
+            _liveness_failed = True
+            logger.info("Liveness detector unavailable, continuing without it: %s", exc)
+    return _liveness
 
 
 def get_system():
@@ -250,12 +271,19 @@ def identify():
     annotated = sys_.annotate_image(img_rgb, results)
     img_b64 = array_to_base64_jpeg(annotated)
 
+    detector = get_liveness()
     faces = []
     for (top, right, bottom, left), result in results:
-        faces.append({
+        entry = {
             **result.to_dict(),
             "bbox": {"top": top, "right": right, "bottom": bottom, "left": left},
-        })
+        }
+        if detector is not None:
+            try:
+                entry["liveness"] = detector.score(img_rgb, (top, right, bottom, left)).to_dict()
+            except Exception:  # noqa: BLE001 - never fail a match over an advisory signal
+                logger.exception("Liveness scoring failed")
+        faces.append(entry)
 
     return jsonify({
         "faces": faces,

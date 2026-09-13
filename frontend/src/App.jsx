@@ -1,22 +1,38 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import Header from './components/Header.jsx'
-import EnrollForm from './components/EnrollForm.jsx'
-import PersonList from './components/PersonList.jsx'
-import IdentifyPanel from './components/IdentifyPanel.jsx'
-import ResultsPanel from './components/ResultsPanel.jsx'
+import { ROUTES, navigate, useRoute } from './router.js'
+import Directory from './views/Directory.jsx'
+import AddPerson from './views/AddPerson.jsx'
+import Identify from './views/Identify.jsx'
 
 const TOAST_LIFETIME = 4000
 const TOAST_FADE = 150
 
+const NAV = [
+  { path: ROUTES.DIRECTORY, label: 'People', hint: 'Who the system knows' },
+  { path: ROUTES.ADD, label: 'Add someone', hint: 'Teach it a new face' },
+  { path: ROUTES.IDENTIFY, label: 'Identify', hint: 'Ask who this is' },
+]
+
 export default function App() {
+  const route = useRoute()
+
   const [people, setPeople] = useState([])
   const [loadingPeople, setLoadingPeople] = useState(true)
-  const [results, setResults] = useState(null)
+  const [online, setOnline] = useState(null)
   const [toasts, setToasts] = useState([])
+
+  /*
+   * Set when Identify finds a face it cannot name and the user chooses to
+   * enrol it. Carrying the actual File across the route turns a dead end
+   * ("Not recognised") into the next step, which is the whole point of
+   * separating the screens instead of stacking them in one dashboard.
+   */
+  const [handoffPhoto, setHandoffPhoto] = useState(null)
 
   const timersRef = useRef(new Map())
   const nextIdRef = useRef(0)
 
+  // ------------------------------------------------------------- toasts
   const dismissToast = useCallback((id) => {
     const timers = timersRef.current.get(id)
     if (timers) {
@@ -25,15 +41,12 @@ export default function App() {
       timersRef.current.delete(id)
     }
     setToasts(prev => prev.map(t => (t.id === id ? { ...t, leaving: true } : t)))
-    setTimeout(() => {
-      setToasts(prev => prev.filter(t => t.id !== id))
-    }, TOAST_FADE)
+    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), TOAST_FADE)
   }, [])
 
   const notify = useCallback((message, tone = 'success') => {
     const id = nextIdRef.current++
     setToasts(prev => [...prev, { id, message, tone, leaving: false }])
-
     const fade = setTimeout(() => {
       setToasts(prev => prev.map(t => (t.id === id ? { ...t, leaving: true } : t)))
     }, TOAST_LIFETIME)
@@ -41,52 +54,33 @@ export default function App() {
       setToasts(prev => prev.filter(t => t.id !== id))
       timersRef.current.delete(id)
     }, TOAST_LIFETIME + TOAST_FADE)
-
     timersRef.current.set(id, { fade, remove })
   }, [])
 
   useEffect(() => {
     const timers = timersRef.current
     return () => {
-      timers.forEach(({ fade, remove }) => {
-        clearTimeout(fade)
-        clearTimeout(remove)
-      })
+      timers.forEach(({ fade, remove }) => { clearTimeout(fade); clearTimeout(remove) })
       timers.clear()
     }
   }, [])
 
+  // -------------------------------------------------------------- data
   const loadPeople = useCallback(async () => {
     try {
       const res = await fetch('/api/persons', { headers: { Accept: 'application/json' } })
       if (!res.ok) throw new Error(`Server responded ${res.status}`)
       const data = await res.json()
       setPeople(data.persons ?? [])
-      return true
+      setOnline(true)
     } catch {
-      return false
+      setOnline(false)
     } finally {
       setLoadingPeople(false)
     }
   }, [])
 
   useEffect(() => { loadPeople() }, [loadPeople])
-
-  const handleEnrolled = useCallback((payload) => {
-    const { name, faces_enrolled: count, warnings = [] } = payload
-    if (count > 0) {
-      const label = count === 1 ? '1 photo' : `${count} photos`
-      notify(`Enrolled ${name} from ${label}.`, 'success')
-      warnings.forEach(w => notify(w, 'warning'))
-    } else if (warnings.length > 0) {
-      // The per-photo warnings say *why* ("Found 2 faces", "not a readable
-      // image"). A generic summary here would hide the actionable part.
-      warnings.forEach(w => notify(w, 'warning'))
-    } else {
-      notify(`Nothing was enrolled for ${name}.`, 'warning')
-    }
-    loadPeople()
-  }, [notify, loadPeople])
 
   const handleRemove = useCallback(async (name) => {
     try {
@@ -98,7 +92,7 @@ export default function App() {
       const data = await res.json().catch(() => ({}))
       if (res.ok && data.removed) {
         setPeople(prev => prev.filter(p => p !== name))
-        notify(`Removed ${name}.`, 'success')
+        notify(`${name} removed.`, 'success')
         loadPeople()
       } else {
         notify(data.error ?? `Could not remove ${name}.`, 'error')
@@ -108,65 +102,76 @@ export default function App() {
     }
   }, [notify, loadPeople])
 
-  const handleIdentified = useCallback((data) => {
-    setResults(data)
-    const count = data.num_faces ?? 0
-    if (count === 0) {
-      notify('No faces found in that photo.', 'warning')
-      return
-    }
+  // Identify hands a face to enrolment; enrolment consumes it exactly once.
+  const enrolThisFace = useCallback((file) => {
+    setHandoffPhoto(file)
+    navigate(ROUTES.ADD)
+  }, [])
 
-    const facesLabel = count === 1 ? '1 face' : `${count} faces`
+  const consumeHandoff = useCallback(() => setHandoffPhoto(null), [])
 
-    // Nothing enrolled yet: say so, rather than reporting a bare non-match.
-    if (data.enrolled_count === 0) {
-      notify(`Found ${facesLabel}, but nobody is enrolled yet. Add a person first.`, 'warning')
-      return
-    }
+  const shared = {
+    people,
+    loadingPeople,
+    notify,
+    reload: loadPeople,
+    onRemove: handleRemove,
+  }
 
-    const known = data.faces.filter(f => f.is_known).length
-    notify(
-      known > 0
-        ? `Found ${facesLabel}, ${known} recognised.`
-        : `Found ${facesLabel}, none recognised.`,
-      known > 0 ? 'success' : 'warning',
-    )
-  }, [notify])
+  let view
+  if (route === ROUTES.ADD) {
+    view = <AddPerson {...shared} handoffPhoto={handoffPhoto} onConsumeHandoff={consumeHandoff} />
+  } else if (route === ROUTES.IDENTIFY) {
+    view = <Identify {...shared} onEnrolThisFace={enrolThisFace} />
+  } else {
+    view = <Directory {...shared} />
+  }
 
   return (
-    <div className="app">
-      <Header peopleCount={people.length} />
-
-      <main className="layout">
-        <div className="column">
-          <PersonList
-            people={people}
-            loading={loadingPeople}
-            onRemove={handleRemove}
-          />
-          <EnrollForm onEnrolled={handleEnrolled} onError={msg => notify(msg, 'error')} />
+    <div className="shell">
+      <nav className="rail" aria-label="Main">
+        <div className="rail-brand">
+          <span className="rail-mark" aria-hidden="true" />
+          <span className="rail-brand-text">Face&nbsp;ID</span>
         </div>
 
-        <div className="column">
-          <IdentifyPanel
-            onIdentified={handleIdentified}
-            onError={msg => notify(msg, 'error')}
-          />
-          <ResultsPanel data={results} />
+        <ul className="rail-nav">
+          {NAV.map(item => {
+            const active = route === item.path
+            return (
+              <li key={item.path}>
+                <a
+                  href={`#${item.path}`}
+                  className={`rail-link${active ? ' is-active' : ''}`}
+                  aria-current={active ? 'page' : undefined}
+                >
+                  <span className="rail-label">{item.label}</span>
+                  <span className="rail-hint">{item.hint}</span>
+                  {item.path === ROUTES.DIRECTORY && people.length > 0 && (
+                    <span className="rail-count">{people.length}</span>
+                  )}
+                </a>
+              </li>
+            )
+          })}
+        </ul>
+
+        <div className="rail-foot">
+          <span className={`dot is-${online === null ? 'checking' : online ? 'online' : 'offline'}`} aria-hidden="true" />
+          {online === null ? 'Connecting' : online ? 'Connected' : 'Server unreachable'}
         </div>
-      </main>
+      </nav>
+
+      <main className="stage">{view}</main>
 
       <div className="toasts" role="status" aria-live="polite">
-        {toasts.map(toast => (
-          <div
-            key={toast.id}
-            className={`toast is-${toast.tone}${toast.leaving ? ' is-leaving' : ''}`}
-          >
-            <span className="toast-text">{toast.message}</span>
+        {toasts.map(t => (
+          <div key={t.id} className={`toast is-${t.tone}${t.leaving ? ' is-leaving' : ''}`}>
+            <span className="toast-text">{t.message}</span>
             <button
               type="button"
               className="toast-close"
-              onClick={() => dismissToast(toast.id)}
+              onClick={() => dismissToast(t.id)}
               aria-label="Dismiss notification"
             >
               &times;

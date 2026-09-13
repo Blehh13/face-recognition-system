@@ -1,0 +1,52 @@
+{
+  "test_identities": 462,
+  "test_images": 2223,
+  "pairs": 6000,
+  "results": {
+    "dlib-baseline": {
+      "n_pairs": 6000,
+      "n_genuine": 3000,
+      "n_impostor": 3000,
+      "auc": 0.9954376666666667,
+      "eer": 0.026666666666666644,
+      "eer_threshold": 0.6436034417331403,
+      "best_accuracy": 0.975,
+      "best_threshold": 0.640373820515501,
+      "tar_at_far_1pct": 0.9556666666666667,
+      "tar_at_far_0p1pct": 0.9026666666666666,
+      "mean_genuine_distance": 0.4386687733624081,
+      "mean_impostor_distance": 0.8233167390748443,
+      "separation": 4.0755438185251975
+    },
+    "head": {
+      "n_pairs": 6000,
+      "n_genuine": 3000,
+      "n_impostor": 3000,
+      "auc": 0.9880964444444444,
+      "eer": 0.04133333333333333,
+      "eer_threshold": 1.097802758216858,
+      "best_accuracy": 0.9663333333333334,
+      "best_threshold": 1.0272904634475708,
+      "tar_at_far_1pct": 0.931,
+      "tar_at_far_0p1pct": 0.852,
+      "mean_genuine_distance": 0.6830793619155884,
+      "mean_impostor_distance": 1.3686800003051758,
+      "separation": 4.001641273498535
+    },
+    "scratch": {
+      "n_pairs": 6000,
+      "n_genuine": 3000,
+      "n_impostor": 3000,
+      "auc": 0.9056943888888889,
+      "eer": 0.17900000000000002,
+      "eer_threshold": 1.3094797134399414,
+      "best_accuracy": 0.828,
+      "best_threshold": 1.30112886428833,
+      "tar_at_far_1pct": 0.46166666666666667,
+      "tar_at_far_0p1pct": 0.294,
+      "mean_genuine_distance": 1.1584936380386353,
+      "mean_impostor_distance": 1.3922752141952515,
+      "separation": 1.7871158123016357
+    }
+  }
+}

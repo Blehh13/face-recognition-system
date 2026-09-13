@@ -1,0 +1,35 @@
+{
+  "fitted_threshold": 0.6052914129662004,
+  "shipped_threshold": 0.6,
+  "metric": "euclidean",
+  "fitted_on": {
+    "identities": 98,
+    "pairs": 4000,
+    "source": "LFW validation identities (disjoint from train and test)"
+  },
+  "test": {
+    "identities": 462,
+    "pairs": 6000,
+    "shipped": {
+      "threshold": 0.6,
+      "accuracy": 0.971,
+      "far": 0.006333333333333333,
+      "frr": 0.051666666666666666
+    },
+    "calibrated": {
+      "threshold": 0.6052914129662004,
+      "accuracy": 0.9718333333333333,
+      "far": 0.007,
+      "frr": 0.04933333333333333
+    },
+    "oracle_best_on_test": {
+      "threshold": 0.640373820515501,
+      "accuracy": 0.975,
+      "far": 0.023,
+      "frr": 0.027
+    },
+    "auc": 0.9954376666666667,
+    "eer": 0.026666666666666644,
+    "eer_threshold": 0.6436034417331403
+  }
+}

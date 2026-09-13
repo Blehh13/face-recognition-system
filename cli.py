@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-cli.py — Command-line interface for the Face Recognition System.
+cli.py - Command-line interface for the Face Recognition System.
 
 Commands:
   enroll    Enroll a person from one or more images
@@ -25,7 +25,7 @@ import cv2
 # --------------------------------------------------
 logging.basicConfig(
     level=logging.INFO,
-    format="[%(asctime)s] %(levelname)s %(name)s — %(message)s",
+    format="[%(asctime)s] %(levelname)s %(name)s - %(message)s",
     datefmt="%H:%M:%S",
 )
 logger = logging.getLogger("cli")
@@ -42,7 +42,7 @@ def get_system(threshold, metric):
 # --------------------------------------------------
 @click.group()
 def cli():
-    """Face Recognition Identification System — CLI"""
+    """Face Recognition Identification System - CLI"""
 
 
 # --------------------------------------------------
@@ -51,9 +51,9 @@ def cli():
 @cli.command()
 @click.argument("name")
 @click.argument("images", nargs=-1, required=True)
-@click.option("--single-face", is_flag=True, default=False,
-              help="Skip images that contain multiple faces.")
-def enroll(name, images, single_face):
+@click.option("--allow-multi-face", is_flag=True, default=False,
+              help="Enroll every face in the photo (unsafe: poisons the identity).")
+def enroll(name, images, allow_multi_face):
     """
     Enroll NAME from one or more IMAGE paths.
 
@@ -65,14 +65,14 @@ def enroll(name, images, single_face):
     total = 0
     for img_path in images:
         if not os.path.exists(img_path):
-            click.echo(f"  ⚠  File not found: {img_path}", err=True)
+            click.echo(f"  !  File not found: {img_path}", err=True)
             continue
-        count = sys_.enroll_from_image(name, img_path, require_single_face=single_face)
-        if count:
-            click.echo(f"  ✓  Enrolled {count} face(s) from '{img_path}'")
+        outcome = sys_.enroll_from_image(name, img_path, require_single_face=not allow_multi_face)
+        if outcome.enrolled:
+            click.echo(f"  OK    Enrolled {outcome.enrolled} face(s) from '{img_path}'")
         else:
-            click.echo(f"  ✗  No face detected in '{img_path}'")
-        total += count
+            click.echo(f"  SKIP  {img_path}: {outcome.reason}")
+        total += outcome.enrolled
 
     click.echo(f"\nTotal faces enrolled for '{name}': {total}")
 
@@ -120,11 +120,11 @@ def identify(image, threshold, metric, show, save, json_output):
         output_records.append(rec)
 
         if not json_output:
-            status = "✓  KNOWN" if result.is_known else "✗  UNKNOWN"
+            status = "KNOWN  " if result.is_known else "UNKNOWN"
             click.echo(
-                f"  {status}  →  {result.name}"
+                f"  {status}  ->  {result.name}"
                 f"  | distance={result.distance:.4f}"
-                f"  | confidence={result._confidence():.1%}"
+                f"  | confidence={result.confidence():.1%}"
                 f"  | bbox=({left},{top},{right},{bottom})"
             )
 
@@ -134,17 +134,15 @@ def identify(image, threshold, metric, show, save, json_output):
     # Visualisation
     if show or save:
         import face_recognition
-        import numpy as np
         img_rgb = face_recognition.load_image_file(image)
-        img_bgr = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2BGR)
         annotated = sys_.annotate_image(img_rgb, results)
         annotated_bgr = cv2.cvtColor(annotated, cv2.COLOR_RGB2BGR)
 
         if save:
             cv2.imwrite(save, annotated_bgr)
-            click.echo(f"  → Saved annotated image to '{save}'")
+            click.echo(f"  -> Saved annotated image to '{save}'")
         if show:
-            cv2.imshow("Face Recognition — Press any key to close", annotated_bgr)
+            cv2.imshow("Face Recognition - Press any key to close", annotated_bgr)
             cv2.waitKey(0)
             cv2.destroyAllWindows()
 
@@ -164,7 +162,7 @@ def list_enrolled():
     click.echo(f"Enrolled persons ({len(names)}):")
     for name in names:
         info = db.get_info(name)
-        click.echo(f"  • {name}  ({info['num_images']} image(s), enrolled {info['enrolled_at'][:10]})")
+        click.echo(f"  - {name}  ({info['num_images']} image(s), enrolled {info['enrolled_at'][:10]})")
 
 
 # --------------------------------------------------
@@ -178,9 +176,9 @@ def remove(name):
     from src.database import FaceDatabase
     db = FaceDatabase()
     if db.remove(name):
-        click.echo(f"✓ '{name}' removed from database.")
+        click.echo(f"OK '{name}' removed from database.")
     else:
-        click.echo(f"✗ '{name}' not found in database.")
+        click.echo(f"X '{name}' not found in database.")
 
 
 # --------------------------------------------------
@@ -236,11 +234,11 @@ def evaluate(probe_csv, threshold, metric, save_dir, sweep):
     ev = Evaluator(sys_)
 
     if sweep:
-        click.echo("Running threshold sweep …")
+        click.echo("Running threshold sweep ...")
         sweep_result = ev.threshold_sweep(probe_set, metric=metric, save_dir=save_dir)
         click.echo(f"Best threshold: {sweep_result['best_threshold']:.2f}")
 
-    click.echo("Running full evaluation …")
+    click.echo("Running full evaluation ...")
     metrics = ev.evaluate(probe_set, save_dir=save_dir)
 
     click.echo(f"\n{'='*40}")

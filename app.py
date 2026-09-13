@@ -1,31 +1,56 @@
 """
-app.py — Flask web interface for the Face Recognition System.
+app.py — Flask backend for the Face Recognition System.
 
-Routes:
-  GET  /              → dashboard (enrolled persons + stats)
+API Routes (consumed by the React frontend):
   POST /enroll        → enroll a person from an uploaded image
   POST /identify      → identify face(s) in an uploaded image
   GET  /api/persons   → JSON list of enrolled persons
   POST /api/remove    → remove a person (JSON body: {"name": "..."})
   GET  /health        → health check
+
+Production:
+  The React app is built to static/dist/ via `cd frontend && npm run build`.
+  Flask serves those files as a SPA fallback.
+
+Development:
+  Run Flask (port 5000) + `cd frontend && npm run dev` (port 5173) separately.
+  Vite proxies /enroll, /identify, /api/* to Flask automatically.
+
+Configuration (environment variables):
+  FACEREC_HOST    interface to bind   (default 127.0.0.1 — loopback only)
+  FACEREC_PORT    port                (default 5000)
+  FACEREC_SECRET  Flask secret key    (default: a dev-only value)
 """
 
-import os
-import io
 import base64
 import logging
+import os
+import pathlib
 
 import cv2
 import numpy as np
-from PIL import Image
-from flask import Flask, request, jsonify, render_template, redirect, url_for, flash
+from PIL import Image, UnidentifiedImageError
+from flask import Flask, request, jsonify, send_from_directory, redirect, url_for, flash
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("app")
 
-app = Flask(__name__)
-app.secret_key = "face-recog-secret-key-change-in-prod"
+# React production build lives in static/dist/
+REACT_DIST = pathlib.Path(__file__).parent / "static" / "dist"
+
+app = Flask(__name__, static_folder=str(REACT_DIST), static_url_path="/")
+app.secret_key = os.environ.get("FACEREC_SECRET", "dev-only-insecure-key")
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16 MB
+
+# Emit an error rather than the bare tokens `NaN`/`Infinity`, which are not
+# valid JSON and make browsers throw on parse.
+app.json.allow_nan = False
+
+# Decompression-bomb guard: a small file can decode to gigapixels and exhaust
+# memory. 50 MP is far above any real photograph.
+Image.MAX_IMAGE_PIXELS = 50_000_000
+
+ALLOWED_FORMATS = {"JPEG", "PNG", "BMP", "WEBP", "GIF", "TIFF"}
 
 # Lazy-init the system (heavy import: dlib)
 _system = None
@@ -40,8 +65,34 @@ def get_system():
     return _system
 
 
-def pil_to_rgb_array(pil_image: Image.Image) -> np.ndarray:
-    return np.array(pil_image.convert("RGB"))
+class ImageError(ValueError):
+    """Raised when an upload is missing, unreadable, or not an image."""
+
+
+def read_upload(file_storage) -> np.ndarray:
+    """
+    Decode an uploaded file into an RGB numpy array, or raise ImageError.
+
+    Pillow is asked to verify the format before decoding so that arbitrary
+    bytes cannot be pushed through the decoder.
+    """
+    if file_storage is None or not file_storage.filename:
+        raise ImageError("No image uploaded.")
+
+    try:
+        image = Image.open(file_storage.stream)
+        fmt = (image.format or "").upper()
+        if fmt not in ALLOWED_FORMATS:
+            raise ImageError(f"Unsupported image format: {fmt or 'unknown'}.")
+        return np.array(image.convert("RGB"))
+    except ImageError:
+        raise
+    except UnidentifiedImageError:
+        raise ImageError("That file is not a readable image.")
+    except Image.DecompressionBombError:
+        raise ImageError("That image is too large to process.")
+    except Exception as exc:  # noqa: BLE001 - surface decode failures to the client
+        raise ImageError(f"Could not read the image: {exc}")
 
 
 def array_to_base64_jpeg(arr: np.ndarray) -> str:
@@ -53,16 +104,50 @@ def array_to_base64_jpeg(arr: np.ndarray) -> str:
     return base64.b64encode(buf).decode("ascii")
 
 
+def wants_json() -> bool:
+    """
+    True when the caller wants a JSON reply rather than a redirect.
+
+    The React client sends `Accept: application/json` and needs to know what
+    actually happened; a plain HTML form post still gets flash-and-redirect.
+    """
+    return "application/json" in request.headers.get("Accept", "")
+
+
 # ------------------------------------------------------------------
 # Pages
 # ------------------------------------------------------------------
 
 @app.route("/")
 def index():
-    sys_ = get_system()
-    stats = sys_.db_stats()
-    enrolled = sys_.list_enrolled()
-    return render_template("index.html", stats=stats, enrolled=enrolled)
+    """
+    Serve the built React SPA.
+
+    There used to be a second, separately-styled Jinja UI behind this route as
+    a fallback. Two hand-maintained frontends for three screens is a liability,
+    and the Jinja one was unreachable whenever the build existed, so it is gone
+    — an unbuilt frontend now says so instead of silently rendering a different
+    interface.
+    """
+    if REACT_DIST.exists():
+        return send_from_directory(str(REACT_DIST), "index.html")
+    return (
+        "<h1>Frontend not built</h1>"
+        "<p>Run <code>cd frontend &amp;&amp; npm install &amp;&amp; npm run build</code>, "
+        "then reload. For development, run <code>npm run dev</code> and use port 5173.</p>",
+        503,
+    )
+
+
+@app.route("/<path:path>")
+def static_proxy(path):
+    """Serve React static assets (JS, CSS, etc.) or fall back to index.html for SPA routing."""
+    if REACT_DIST.exists():
+        target = REACT_DIST / path
+        if target.exists():
+            return send_from_directory(str(REACT_DIST), path)
+        return send_from_directory(str(REACT_DIST), "index.html")
+    return jsonify({"error": "Not found"}), 404
 
 
 # ------------------------------------------------------------------
@@ -73,35 +158,63 @@ def index():
 def enroll():
     sys_ = get_system()
     name = request.form.get("name", "").strip()
-    files = request.files.getlist("images")
+    files = [f for f in request.files.getlist("images") if f and f.filename]
+    as_json = wants_json()
 
     if not name:
+        if as_json:
+            return jsonify({"error": "Please enter a person's name."}), 400
         flash("Please enter a person's name.", "error")
         return redirect(url_for("index"))
-    if not files or all(f.filename == "" for f in files):
+
+    if not files:
+        if as_json:
+            return jsonify({"error": "Please select at least one image."}), 400
         flash("Please select at least one image.", "error")
         return redirect(url_for("index"))
 
+    # Fold "alice" into an existing "Alice" instead of creating a second person.
+    existing = sys_.database.find_name(name)
+    if existing and existing != name:
+        logger.info("Name '%s' matched existing entry '%s'.", name, existing)
+        name = existing
+
     total_enrolled = 0
-    errors = []
+    warnings = []
     for f in files:
-        if f.filename == "":
-            continue
         try:
-            img = pil_to_rgb_array(Image.open(f.stream))
-            count = sys_.enroll_from_array(name, img)
-            total_enrolled += count
-            if count == 0:
-                errors.append(f"No face detected in '{f.filename}'.")
-        except Exception as exc:
-            errors.append(f"Error processing '{f.filename}': {exc}")
+            image = read_upload(f)
+        except ImageError as exc:
+            warnings.append(f"{f.filename}: {exc}")
+            continue
+
+        try:
+            outcome = sys_.enroll_from_array(name, image)
+        except ValueError as exc:
+            warnings.append(f"{f.filename}: {exc}")
+            continue
+        except Exception as exc:  # noqa: BLE001
+            logger.exception("Enrolment failed for '%s'", f.filename)
+            warnings.append(f"{f.filename}: {exc}")
+            continue
+
+        total_enrolled += outcome.enrolled
+        if outcome.reason:
+            warnings.append(f"{f.filename}: {outcome.reason}")
+
+    if as_json:
+        return jsonify({
+            "name": name,
+            "faces_enrolled": total_enrolled,
+            "warnings": warnings,
+        })
 
     if total_enrolled > 0:
-        flash(f"✓ Enrolled {total_enrolled} face(s) for '{name}'.", "success")
+        flash(f"Enrolled {total_enrolled} face(s) for '{name}'.", "success")
     else:
-        flash("No faces were enrolled. Make sure images contain clear, frontal faces.", "warning")
-    for e in errors:
-        flash(e, "warning")
+        flash("No faces were enrolled. Use a clear, single-face photo.", "warning")
+    for w in warnings:
+        flash(w, "warning")
 
     return redirect(url_for("index"))
 
@@ -113,34 +226,28 @@ def enroll():
 @app.route("/identify", methods=["POST"])
 def identify():
     sys_ = get_system()
-    f = request.files.get("image")
 
-    if f is None or f.filename == "":
-        return jsonify({"error": "No image uploaded"}), 400
-
-    threshold_str = request.form.get("threshold", "0.60")
     try:
-        threshold = float(threshold_str)
+        img_rgb = read_upload(request.files.get("image"))
+    except ImageError as exc:
+        return jsonify({"error": str(exc)}), 400
+
+    try:
+        threshold = float(request.form.get("threshold", "0.60"))
     except ValueError:
         threshold = 0.60
+    threshold = min(max(threshold, 0.05), 2.0)
 
     try:
-        img_rgb = pil_to_rgb_array(Image.open(f.stream))
-    except Exception as exc:
-        return jsonify({"error": f"Cannot open image: {exc}"}), 400
-
-    # Re-create system with requested threshold
-    from src.system import FaceRecognitionSystem
-    sys_custom = FaceRecognitionSystem(threshold=threshold)
-
-    try:
-        results = sys_custom.identify_from_array(img_rgb)
-    except Exception as exc:
+        # Reuse the loaded system and vary only the threshold. Rebuilding it
+        # per request re-created the dlib wrappers and re-read the whole
+        # database from disk on every identification.
+        results = sys_.identify_from_array(img_rgb, threshold=threshold)
+    except Exception as exc:  # noqa: BLE001
         logger.exception("Identification failed")
         return jsonify({"error": str(exc)}), 500
 
-    # Annotate
-    annotated = sys_custom.annotate_image(img_rgb, results)
+    annotated = sys_.annotate_image(img_rgb, results)
     img_b64 = array_to_base64_jpeg(annotated)
 
     faces = []
@@ -155,6 +262,7 @@ def identify():
         "num_faces": len(faces),
         "annotated_image": f"data:image/jpeg;base64,{img_b64}",
         "threshold_used": threshold,
+        "enrolled_count": len(sys_.list_enrolled()),
     })
 
 
@@ -172,7 +280,7 @@ def api_persons():
 def api_remove():
     sys_ = get_system()
     data = request.get_json(silent=True) or {}
-    name = data.get("name", "").strip()
+    name = (data.get("name") or "").strip()
     if not name:
         return jsonify({"error": "Name is required"}), 400
     removed = sys_.remove_person(name)
@@ -184,9 +292,21 @@ def health():
     return jsonify({"status": "ok"})
 
 
+@app.errorhandler(413)
+def too_large(_exc):
+    return jsonify({"error": "That image is larger than the 16 MB limit."}), 413
+
+
 # ------------------------------------------------------------------
 # Entry point
 # ------------------------------------------------------------------
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    # Loopback by default. These endpoints have no authentication, so binding
+    # 0.0.0.0 would let anyone on the network enroll, identify, and delete
+    # people. Opt in explicitly with FACEREC_HOST=0.0.0.0 on a trusted network.
+    host = os.environ.get("FACEREC_HOST", "127.0.0.1")
+    port = int(os.environ.get("FACEREC_PORT", "5000"))
+    if host != "127.0.0.1":
+        logger.warning("Binding %s — the API is unauthenticated. Use a trusted network.", host)
+    app.run(host=host, port=port, debug=False)

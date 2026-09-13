@@ -81,7 +81,7 @@ class Evaluator:
                 _, result    = face_results[0]  # take primary face
                 pred_label   = result.name
                 distance     = result.distance
-                confidence   = result._confidence()
+                confidence   = result.confidence()
 
             y_true.append(true_label)
             y_pred.append(pred_label)

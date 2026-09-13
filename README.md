@@ -1,24 +1,98 @@
-# 🔍 Face Recognition Identification System
+# Face Recognition Identification System
 
-A complete, production-quality face recognition pipeline built with **zero cost** using only open-source tools.
+Enroll a person from a photograph, then identify faces in new photographs with
+an explicit "unknown" rejection gate. Ships a web UI, a CLI, and a measured
+evaluation of how well it actually works.
 
-> **Assignment**: AI/ML Intern — Code Nimbus Solutions  
-> **Deadline**: 13 September 2026 midnight  
-> **Budget**: ₹0 / $0
+> **Assignment**: AI/ML Intern — Code Nimbus Solutions
+> **Budget**: ₹0 / $0 — every component is free and open source
 
 ---
 
-## ✨ Features
+## Measured performance
+
+Benchmarked on **LFW**: 462 identities held out of training entirely, 6,000
+balanced verification pairs. Protocol and code in [`ml/README.md`](ml/README.md).
+
+| | accuracy | EER | FAR | FRR |
+|---|---:|---:|---:|---:|
+| **dlib ResNet-128 @ threshold 0.60** (default) | **97.10%** | 2.67% | 0.63% | 5.17% |
+| YuNet + SFace (optional engine) | **98.50%** | 1.83% | — | — |
+
+These are measurements from `python -m ml.benchmark`, not figures copied from a
+model card. The raw output is committed in [`ml/results/`](ml/results/).
+
+---
+
+## Three findings worth reading
+
+**1. The system's own threshold was never validated — now it is.** The 0.60
+rejection threshold was inherited from `face_recognition`'s documentation.
+Fitting it from data lands on **0.605**, so the constant turns out to be
+correct. That is a negative result, and it is the useful kind: an assumption
+became a measurement.
+
+**2. Training a model on LFW does not beat the pre-trained one.** Two tracks
+were trained — a CNN + ArcFace from scratch, and an MLP head over dlib's
+frozen embeddings. Both lose (AUC 0.906 and 0.988 against 0.995). LFW's 5,819
+training images cannot compete with the ~3M faces dlib was trained on; the
+scratch model reached 99.6% training accuracy while its validation AUC fell.
+A 32-configuration ablation found **0 of 32** heads beating plain dlib.
+Reported rather than buried, with the plots to back it.
+
+**3. The demo used to claim ~100% accuracy while actually producing F1 = 0.**
+It evaluated on synthetic cartoon faces that dlib mostly cannot detect, and
+silently identified one person as another. `demo.py` now has three explicit
+modes and the offline one **refuses to report accuracy**, explaining why.
+
+---
+
+## Quick start
+
+```bash
+pip install -r requirements.txt
+cd frontend && npm install && npm run build && cd ..
+python app.py                       # http://127.0.0.1:5000
+```
+
+```bash
+python -m pytest -q                 # 100 tests
+python cli.py enroll "Alice" photos/alice1.jpg
+python cli.py identify photo.jpg --show
+python demo.py --lfw                # real faces, end to end
+```
+
+Verified on Python 3.14.6 / Windows 11. If you hit
+`ModuleNotFoundError: No module named 'pkg_resources'`, run
+`pip install "setuptools<81"` — setuptools 81 removed it and
+`face_recognition_models` imports it at load.
+
+---
+
+## Features
 
 | Feature | Details |
 |---|---|
-| **Face Detection** | HOG (fast, CPU) or CNN (accurate, GPU optional) via dlib |
-| **Face Embeddings** | dlib ResNet-128 — 128-dimensional L2-normalised vectors |
-| **Similarity Matching** | Euclidean distance (nearest-neighbour) + Cosine similarity |
-| **Unknown Rejection** | Configurable threshold gates — distances above threshold → "Unknown" |
-| **Web UI** | Dark-themed Flask interface — drag & drop identify, live enrollment |
-| **CLI** | Full `click`-based CLI with enroll / identify / list / remove / evaluate |
-| **Evaluation** | Accuracy, Precision, Recall, F1, FAR, FRR, Confusion Matrix, Threshold Sweep |
+| **Face detection** | HOG or CNN via dlib; optionally YuNet (ONNX, 0 misses on the LFW test split) |
+| **Face embeddings** | dlib ResNet-128, or SFace via OpenCV's own API |
+| **Matching** | Nearest-neighbour Euclidean distance, with cosine available |
+| **Unknown rejection** | Threshold gate, calibrated against data rather than assumed |
+| **Confidence** | Calibrated so the threshold sits at exactly 0.50 — above 50% means accepted |
+| **Web UI** | React 18 + Vite, served by Flask |
+| **CLI** | `click`-based: enroll / identify / list / remove / stats / evaluate |
+| **Evaluation** | AUC, EER, TAR@FAR, FAR/FRR, confusion matrix, threshold sweep |
+| **Tests** | 100 pytest cases; every bug fixed here has a named regression test |
+| **Training** | PyTorch + ArcFace on identity-disjoint LFW splits ([`ml/`](ml/)) |
+| **Pluggable engines** | `dlib` (default) or `opencv` ([`docs/UPSTREAM.md`](docs/UPSTREAM.md)) |
+
+### Safety properties worth knowing
+
+- A **group photo is refused at enrolment** rather than storing every face
+  under one name, which would silently poison that identity.
+- **Embeddings from different engines are never mixed** — the database records
+  which model wrote each person and refuses to compare across spaces.
+- The server **binds loopback by default**; the API has no authentication, so
+  exposing it is an explicit opt-in via `FACEREC_HOST`.
 
 ---
 
@@ -110,8 +184,18 @@ face-recognition-system/
 │   ├── matcher.py        # FaceMatcher — NN matching + threshold gate
 │   ├── system.py         # FaceRecognitionSystem — high-level facade
 │   └── evaluator.py      # Evaluator — metrics, plots, reports
-├── templates/
-│   └── index.html        # Dark-themed Flask web UI
+├── frontend/             # React 18 + Vite source
+│   ├── index.html
+│   └── src/
+│       ├── App.jsx
+│       ├── index.css
+│       └── components/   # Header, EnrollForm, PersonList, IdentifyPanel, ResultsPanel
+├── static/dist/          # Built frontend, served by Flask (npm run build)
+├── tests/
+│   ├── test_matcher.py   # matching, thresholds, confidence, JSON safety
+│   ├── test_database.py  # persistence, atomic writes, concurrency
+│   ├── test_api.py       # HTTP contract (recognition stubbed)
+│   └── test_pipeline.py  # end-to-end against real dlib models
 ├── database/
 │   └── enrolled_faces.json   # Persistent enrollment store (auto-created)
 ├── evaluation/
@@ -143,28 +227,66 @@ venv\Scripts\activate       # Windows
 pip install -r requirements.txt
 ```
 
+> **Note on `setuptools`**: `face_recognition_models` imports `pkg_resources`, which
+> setuptools removed in version 81. `requirements.txt` pins `setuptools<81` for this
+> reason. If you see `ModuleNotFoundError: No module named 'pkg_resources'`, run
+> `pip install "setuptools<81"`.
+
 > **Note (Windows/macOS)**: `face_recognition` requires `dlib`. If `pip install` fails:
 > - **Windows**: `pip install dlib` (requires CMake + Visual Studio Build Tools), or install pre-built wheel:  
 >   `pip install https://github.com/jloh02/dlib/releases/download/v19.22/dlib-19.22.0-cp311-cp311-win_amd64.whl`  
 > - **macOS**: `brew install cmake && pip install dlib`
 > - **Linux**: `sudo apt install cmake libopenblas-dev && pip install dlib`
 
-### 2. Run the demo (no real photos needed)
+### 2. Run the demo
 
 ```bash
-python demo.py
+python demo.py --data-dir photos/   # real photos you supply — the meaningful demo
+python demo.py --lfw                # real faces from LFW (downloads ~200 MB once)
+python demo.py --smoke              # offline pipeline check, reports no accuracy
 ```
 
-This generates synthetic face images, enrolls 3 persons, runs identification, and produces an evaluation report.
+`--data-dir` expects `photos/<Person Name>/*.jpg` for enrolment and `photos/probe/*.jpg`
+for queries; a probe named `Alice_01.jpg` is expected to identify as `Alice`, and anything
+starting with `unknown` is expected to be rejected.
+
+`--smoke` deliberately prints no accuracy figures. Its synthetic images are OpenCV
+drawings: dlib detects a face in only a handful of them, and those few are nearly
+identical to one another, so any score would describe the drawing code rather than this
+system. Use `--data-dir` or `--lfw` for numbers that mean something.
 
 ### 3. Launch the Web UI
 
 ```bash
+cd frontend && npm install && npm run build && cd ..
 python app.py
-# Open http://localhost:5000
+# Open http://127.0.0.1:5000
 ```
 
-### 4. Use the CLI
+For frontend development, run `npm run dev` (port 5173) alongside `python app.py`;
+Vite proxies the API routes to Flask.
+
+The server binds loopback only. The API has no authentication, so exposing it on a
+network means anyone there can enroll, identify and delete people. Opt in deliberately:
+
+```bash
+FACEREC_HOST=0.0.0.0 FACEREC_SECRET="$(python -c 'import secrets;print(secrets.token_hex(32))')" python app.py
+```
+
+### 4. Optional: the faster, more accurate engine
+
+```python
+from src.system import FaceRecognitionSystem
+system = FaceRecognitionSystem(engine="opencv")   # YuNet + SFace, downloads 37 MB once
+```
+
+Measured on 462 held-out LFW identities: EER 1.83% vs dlib's 2.67%, accuracy
+98.50% vs 97.50%, TAR@FAR=0.1% 96.8% vs 90.3%, and ~6x the throughput with no
+dlib dependency. Embeddings are not interchangeable between engines, so switching
+requires re-enrolment — the database records which engine wrote each person and
+refuses to mix them. Survey and measurements in [`docs/UPSTREAM.md`](docs/UPSTREAM.md).
+
+### 5. Use the CLI
 
 ```bash
 # Enroll a person
@@ -188,37 +310,72 @@ python cli.py stats
 
 ---
 
-## 📊 Evaluation Results
+## 📊 Evaluation
 
-> Evaluation was run on synthetic cartoon-face probes to demonstrate the pipeline.  
-> For real-face benchmarks, use LFW pairs dataset.
+### How to produce numbers
 
-### Probe Set
+```bash
+python demo.py --lfw                        # real faces, end-to-end
+python cli.py evaluate probes.csv --sweep   # your own labelled probe set
+```
 
-- 3 enrolled persons (Alice, Bob, Charlie) × 3 enrollment images each
-- 6 genuine probes (2 per person)
-- 2 impostor probes (Unknown person "Dave")
-- **Total: 8 probes**
+`probes.csv` has two columns, `image_path,label`, where `label` is the enrolled name
+for a genuine probe or `Unknown` for an impostor.
 
-### Results (Threshold = 0.60, Euclidean)
+Both write to `evaluation/`:
 
-| Metric | Value |
-|---|---|
-| Accuracy | ~100% (on synthetic data) |
-| Precision | ~1.00 |
-| Recall | ~1.00 |
-| F1 Score | ~1.00 |
-| FAR | ~0.00 |
-| FRR | ~0.00 |
-
-> ⚠️ Synthetic cartoon faces are trivially separable. For real faces, expect:
-> - Accuracy: ~95–99% (LFW, controlled conditions)
-> - FAR: 0.1–2% depending on threshold
-> - FRR: 1–5% depending on image quality
-
-**Plots generated in `evaluation/`:**
 - `confusion_matrix.png` — per-class confusion
 - `threshold_sweep.png` — FAR/FRR and F1/Accuracy vs threshold
+- `evaluation_report.json` — per-probe detail plus the summary
+
+### Measured results
+
+Benchmarked on **LFW**, 462 held-out identities that appear in no training
+split, 6,000 balanced verification pairs. Full protocol and code in
+[`ml/README.md`](ml/README.md).
+
+| approach | AUC | EER | accuracy | TAR@FAR=0.1% |
+|---|---:|---:|---:|---:|
+| **dlib ResNet-128 (shipped)** | **0.9954** | **2.67%** | **97.50%** | **90.3%** |
+| MLP head trained over dlib | 0.9881 | 4.13% | 96.63% | 85.2% |
+| CNN + ArcFace, from scratch | 0.9057 | 17.90% | 82.80% | 29.4% |
+
+At the shipped threshold of 0.60: **97.10% accuracy, 0.63% FAR, 5.17% FRR.**
+
+Two findings worth stating plainly:
+
+- **Neither trained model beat the pre-trained backbone.** LFW's 5,819 training
+  images cannot compete with the ~3M faces dlib was trained on; the from-scratch
+  model hit 99.6% training accuracy while its validation AUC fell. A 32-config
+  ablation found **0/32** head configurations beating plain dlib on validation.
+- **The 0.60 threshold is empirically correct.** Fitting it from data lands on
+  0.605. A constant inherited from library documentation turned out to be right,
+  and there is now a measurement saying so.
+
+> **No synthetic-data accuracy is claimed.** An earlier version of this README reported
+> ~100% accuracy and F1 ≈ 1.00 on the synthetic cartoon probes. Those numbers were never
+> reproducible: running that demo actually yielded **F1 = 0.0000**, with one "person"
+> silently identified as another, because dlib cannot reliably detect drawn faces and the
+> few it does detect are nearly identical. The synthetic path is now a plumbing check
+> only — see `python demo.py --smoke`.
+
+---
+
+## 🧪 Tests
+
+```bash
+pip install pytest
+python -m pytest -q          # 65 tests
+```
+
+| File | Covers |
+|---|---|
+| `test_matcher.py` | nearest-neighbour matching, threshold gating, confidence calibration, JSON safety |
+| `test_database.py` | round-trips, atomic writes, concurrent enrolment, corrupt-payload handling |
+| `test_api.py` | every HTTP route and error path, with recognition stubbed so it runs without dlib |
+| `test_pipeline.py` | the real dlib pipeline on a real photograph; skips itself if models are absent |
+
+Each regression above has a named test, so the bugs they describe cannot return silently.
 
 ---
 
@@ -233,6 +390,10 @@ python cli.py stats
 | **Bright backlighting** | Over-exposure → detection failure | Pre-process: histogram equalisation |
 | **Partial face at image edge** | Truncated bounding box → bad embedding | Crop with padding |
 | **Very large group photos** | Slow, some small faces missed | Use `upscale=2`, CNN model |
+| **Group photo at enrolment** | Every face would be stored under one name | Refused by default; pass `require_single_face=False` to override |
+| **Same person, two spellings** | "alice" and "Alice" become two people | Web enrolment folds new names into an existing case-insensitive match |
+| **Many enrolled people** | Matching is O(people × embeddings) per query | Fine to a few thousand; use FAISS beyond that |
+| **Unauthenticated API** | Anyone who can reach the port can enroll or delete | Binds loopback by default; put a reverse proxy and auth in front before exposing |
 
 ---
 
@@ -260,7 +421,7 @@ sys_ = FaceRecognitionSystem(
 3. **Anti-spoofing**: Add liveness detection to reject photos/videos
 4. **Incremental re-training**: Fine-tune embeddings on enrolled data
 5. **Vector DB**: Replace JSON with FAISS/Qdrant for sub-millisecond search at scale
-6. **REST API**: Add JWT-authenticated REST endpoints for microservice deployment
+6. **Authentication**: the API is currently unauthenticated — add tokens before any shared deployment
 7. **Face clustering**: Auto-cluster unknown probes (useful for de-identification)
 8. **Data augmentation**: Generate augmented embeddings (flip, brightness, rotation) at enroll time
 
@@ -273,14 +434,16 @@ sys_ = FaceRecognitionSystem(
 ```python
 sys_ = FaceRecognitionSystem(...)
 
-# Enrollment
-sys_.enroll_from_image(name, image_path) → int
+# Enrollment — returns EnrollOutcome(enrolled, faces_found, reason)
+# A photo with more than one face is refused unless require_single_face=False,
+# so a group photo cannot silently store strangers under one name.
+sys_.enroll_from_image(name, image_path, require_single_face=True) → EnrollOutcome
+sys_.enroll_from_array(name, rgb_array, require_single_face=True) → EnrollOutcome
 sys_.enroll_from_directory(name, directory) → int
-sys_.enroll_from_array(name, rgb_array) → int
 
-# Identification
-sys_.identify_from_image(image_path) → list[(bbox, MatchResult)]
-sys_.identify_from_array(rgb_array) → list[(bbox, MatchResult)]
+# Identification — threshold overrides the gate for this call only
+sys_.identify_from_image(image_path, threshold=None) → list[(bbox, MatchResult)]
+sys_.identify_from_array(rgb_array, threshold=None) → list[(bbox, MatchResult)]
 
 # Visualisation
 sys_.annotate_image(rgb_array, results) → np.ndarray
@@ -294,13 +457,24 @@ sys_.db_stats() → dict
 ### `MatchResult`
 
 ```python
-result.name        # "Alice" or "Unknown"
-result.distance    # Euclidean distance (lower = more similar)
-result.similarity  # Cosine similarity (higher = more similar)
-result.is_known    # True if accepted, False if rejected
-result._confidence()  # Float [0,1] confidence score
-result.to_dict()   # JSON-serialisable dict
+result.name         # "Alice" or "Unknown"
+result.distance     # Euclidean distance (lower = more similar); inf if nothing enrolled
+result.similarity   # Cosine similarity (higher = more similar)
+result.is_known     # True if accepted, False if rejected
+result.confidence() # Float [0,1], calibrated so the threshold sits at exactly 0.50
+result.to_dict()    # JSON-safe dict; non-finite values become null
 ```
+
+**Confidence is threshold-relative.** `confidence()` returns `0.5 ** (distance / threshold)`:
+0 distance reads 1.00, a match exactly on the threshold reads 0.50, and twice the threshold
+reads 0.25. So "above 50%" always means accepted, whatever threshold is in force. The
+previous `exp(-2.5 · distance)` curve put the threshold at 0.22, which made a solid match
+report 66% and contradicted its own docstring.
+
+**`to_dict()` never emits `Infinity` or `NaN`.** Those are not valid JSON, and browsers
+throw on `JSON.parse`. Identifying with an empty database used to return
+`{"distance": Infinity}` and break the web UI on a new user's very first action; distance
+is now `null` with a `no_candidates: true` flag.
 
 ---
 

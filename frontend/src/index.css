@@ -1,0 +1,679 @@
+/* ============================================================
+   Face Recognition System — base stylesheet
+   Vanilla CSS. No frameworks, no preprocessor.
+   ============================================================ */
+
+:root {
+  --bg:        #f7f8fa;
+  --surface:   #ffffff;
+  --border:    #e2e4e9;
+  --text:      #111318;
+  --text-sub:  #6b7280;
+  --accent:    #2563eb;
+  --danger:    #dc2626;
+  --success:   #16a34a;
+  --warning:   #d97706;
+  --muted:     #f3f4f6;
+
+  --accent-dark: #2159d4;   /* --accent, 10% darker */
+  --accent-wash: #eff6ff;   /* drag-over fill */
+  --track:       #d1d5db;   /* slider track */
+  --radius:      8px;
+  --radius-sm:   6px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 14px;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+p {
+  margin: 0;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+/* ============================================================
+   Layout
+   ============================================================ */
+
+.app {
+  min-height: 100vh;
+}
+
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.header-sub {
+  font-size: 12px;
+  color: var(--text-sub);
+  margin-top: 1px;
+}
+
+.header-status {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-sub);
+  white-space: nowrap;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--text-sub);
+  flex-shrink: 0;
+}
+
+.status-dot.is-online {
+  background: var(--success);
+}
+
+.status-dot.is-offline {
+  background: var(--danger);
+}
+
+.layout {
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding-block: 24px;
+  padding-left: 24px;
+  padding-right: 24px;
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+/* ============================================================
+   Card
+   ============================================================ */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+.card-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.card-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.card-count {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-sub);
+  white-space: nowrap;
+}
+
+/* ============================================================
+   Forms
+   ============================================================ */
+
+.field {
+  margin-bottom: 14px;
+}
+
+.field-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-sub);
+  margin-bottom: 6px;
+}
+
+.input {
+  width: 100%;
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  outline: none;
+}
+
+.input::placeholder {
+  color: var(--text-sub);
+}
+
+.input:focus {
+  border-color: var(--accent);
+}
+
+.input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--accent);
+  color: #ffffff;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  padding: 10px 18px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--accent-dark);
+  border-color: var(--accent-dark);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.btn-danger {
+  background: var(--surface);
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #ffffff;
+}
+
+.btn-text {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--danger);
+  cursor: pointer;
+}
+
+.btn-text:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.btn-text:disabled {
+  color: var(--text-sub);
+  cursor: not-allowed;
+}
+
+/*
+ * The spinner is the one moving element in the interface: it is the only way
+ * to show that a request is still in flight, so it earns its motion.
+ */
+.spinner {
+  width: 13px;
+  height: 13px;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+.spinner-dark {
+  border-color: var(--border);
+  border-top-color: var(--text-sub);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 2.4s;
+  }
+}
+
+/* ============================================================
+   Upload zone
+   ============================================================ */
+
+.upload {
+  width: 100%;
+  display: block;
+  background: var(--muted);
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 22px 16px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.upload:hover,
+.upload:focus-visible,
+.upload.is-dragging {
+  border-color: var(--accent);
+  background: var(--accent-wash);
+  outline: none;
+}
+
+.upload:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.upload:disabled:hover {
+  border-color: var(--border);
+  background: var(--muted);
+}
+
+.upload-arrow {
+  font-size: 18px;
+  line-height: 1;
+  color: var(--text-sub);
+  margin-bottom: 6px;
+}
+
+.upload-main {
+  font-size: 13px;
+  font-weight: 500;
+  word-break: break-word;
+}
+
+.upload-hint {
+  font-size: 12px;
+  color: var(--text-sub);
+  margin-top: 3px;
+}
+
+.upload input[type="file"] {
+  display: none;
+}
+
+.preview {
+  width: 100%;
+  max-height: 300px;
+  object-fit: contain;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--muted);
+  margin-top: 12px;
+}
+
+.thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.thumb {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+/* ============================================================
+   Person list
+   ============================================================ */
+
+.person-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.person-row {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 8px;
+  margin: 0 -8px;
+  border-radius: var(--radius-sm);
+}
+
+.person-row:hover {
+  background: var(--muted);
+}
+
+.person-row + .person-row {
+  border-top: 1px solid var(--border);
+}
+
+.person-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.person-row .btn-text {
+  visibility: hidden;
+}
+
+.person-row:hover .btn-text,
+.person-row:focus-within .btn-text,
+.person-row .btn-text.is-busy {
+  visibility: visible;
+}
+
+/* ============================================================
+   Empty states
+   ============================================================ */
+
+.empty {
+  background: var(--muted);
+  border-radius: var(--radius-sm);
+  padding: 20px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-sub);
+}
+
+/* ============================================================
+   Threshold slider
+   ============================================================ */
+
+.threshold {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.threshold-value {
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  min-width: 30px;
+}
+
+.range {
+  flex: 1;
+  min-width: 0;
+  height: 16px;
+  background: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.range::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--track);
+}
+
+.range::-webkit-slider-thumb {
+  width: 14px;
+  height: 14px;
+  margin-top: -5px;
+  border: none;
+  border-radius: 50%;
+  background: var(--accent);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.range::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--track);
+}
+
+.range::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: none;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.range:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+
+.range:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   Results
+   ============================================================ */
+
+.result-image {
+  width: 100%;
+  max-height: 420px;
+  object-fit: contain;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--muted);
+  margin-bottom: 16px;
+}
+
+.result {
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--success);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+}
+
+.result.is-unknown {
+  border-left-color: var(--warning);
+}
+
+.result + .result {
+  margin-top: 10px;
+}
+
+.result-name {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.result-meta {
+  font-size: 12px;
+  color: var(--text-sub);
+  margin-top: 3px;
+}
+
+/* ============================================================
+   Toasts
+   ============================================================ */
+
+.toasts {
+  position: fixed;
+  /* Clears the header band, so a toast never hides the connection status. */
+  top: 68px;
+  right: 16px;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 320px;
+  max-width: calc(100vw - 32px);
+}
+
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-size: 13px;
+  opacity: 1;
+  transition: opacity 0.15s;
+}
+
+.toast.is-leaving {
+  opacity: 0;
+}
+
+.toast.is-success {
+  border-left-color: var(--success);
+}
+
+.toast.is-error {
+  border-left-color: var(--danger);
+}
+
+.toast.is-warning {
+  border-left-color: var(--warning);
+}
+
+.toast-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.toast-close {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 15px;
+  line-height: 1;
+  color: var(--text-sub);
+  cursor: pointer;
+}
+
+.toast-close:hover {
+  color: var(--text);
+}
+
+/* ============================================================
+   Inline messages
+   ============================================================ */
+
+.error-text {
+  font-size: 12px;
+  color: var(--danger);
+  margin-top: 10px;
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+
+@media (max-width: 880px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .header {
+    padding: 14px 16px;
+  }
+}
+
+/*
+ * A 320px panel pinned top-right covers the header on a phone, so below this
+ * width the toasts move to the bottom of the screen and span it instead.
+ */
+@media (max-width: 560px) {
+  .toasts {
+    top: auto;
+    bottom: 16px;
+    left: 16px;
+    right: 16px;
+    width: auto;
+    max-width: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .header-status {
+    margin-left: 0;
+    width: 100%;
+  }
+}

@@ -35,6 +35,14 @@
       "source": "https://commons.wikimedia.org/wiki/File:Commodore_Grace_Hopper,_an_early_computer_pioneer.png"
     },
     {
+      "file": "probe/Grace_Hopper_2.jpg",
+      "person": "Grace_Hopper",
+      "commons_title": "File:Commodore Grace M. Hopper, USN (covered) head and shoulders crop.jpg",
+      "licence": "Public domain",
+      "credit": "James S. Davis",
+      "source": "https://commons.wikimedia.org/wiki/File:Commodore_Grace_M._Hopper,_USN_(covered)_head_and_shoulders_crop.jpg"
+    },
+    {
       "file": "enrolled/Katherine_Johnson/Katherine_Johnson_1.jpg",
       "person": "Katherine_Johnson",
       "commons_title": "File:Katherine Johnson 1983.jpg",
@@ -65,6 +73,14 @@
       "licence": "Public domain",
       "credit": "NASA",
       "source": "https://commons.wikimedia.org/wiki/File:Katherine_johnson_john_glenn.png"
+    },
+    {
+      "file": "probe/Katherine_Johnson_2.jpg",
+      "person": "Katherine_Johnson",
+      "commons_title": "File:NASA human computers - Katherine Coleman Goble Johnson.jpg",
+      "licence": "Public domain",
+      "credit": "NASA",
+      "source": "https://commons.wikimedia.org/wiki/File:NASA_human_computers_-_Katherine_Coleman_Goble_Johnson.jpg"
     },
     {
       "file": "enrolled/Sally_Ride/Sally_Ride_1.jpg",
@@ -99,6 +115,14 @@
       "source": "https://commons.wikimedia.org/wiki/File:WRM_Sally_Ride_Woman_astronaut_-_Astronautin.jpg"
     },
     {
+      "file": "probe/Sally_Ride_2.jpg",
+      "person": "Sally_Ride",
+      "commons_title": "File:FEMALE ASTRONAUT CANDIDATES - SALLY K RIDE - NARA - 17472006.jpg",
+      "licence": "Public domain",
+      "credit": "Unknown authorUnknown author or not provided",
+      "source": "https://commons.wikimedia.org/wiki/File:FEMALE_ASTRONAUT_CANDIDATES_-_SALLY_K_RIDE_-_NARA_-_17472006.jpg"
+    },
+    {
       "file": "enrolled/Mae_Jemison/Mae_Jemison_1.jpg",
       "person": "Mae_Jemison",
       "commons_title": "File:Mae-jemison.jpg",
@@ -129,6 +153,14 @@
       "licence": "Public domain",
       "credit": "Post of Azerbaijan",
       "source": "https://commons.wikimedia.org/wiki/File:Stamp_of_Azerbaijan_-_1995_-_Colnect_943390_-_Mae_Jemison.jpeg"
+    },
+    {
+      "file": "probe/Mae_Jemison_2.jpg",
+      "person": "Mae_Jemison",
+      "commons_title": "File:Stamps of Azerbaijan, 1995-307.jpg",
+      "licence": "Public domain",
+      "credit": "Post of Azerbaijan",
+      "source": "https://commons.wikimedia.org/wiki/File:Stamps_of_Azerbaijan,_1995-307.jpg"
     },
     {
       "file": "enrolled/Buzz_Aldrin/Buzz_Aldrin_1.jpg",
@@ -163,6 +195,326 @@
       "source": "https://commons.wikimedia.org/wiki/File:Buzz_Aldrin_at_the_2019_State_of_the_Union_Address.jpg"
     },
     {
+      "file": "enrolled/Neil_Armstrong/Neil_Armstrong_1.jpg",
+      "person": "Neil_Armstrong",
+      "commons_title": "File:Astronaut Neil A. Armstrong (1964).jpg",
+      "licence": "Public domain",
+      "credit": "NASA",
+      "source": "https://commons.wikimedia.org/wiki/File:Astronaut_Neil_A._Armstrong_(1964).jpg"
+    },
+    {
+      "file": "enrolled/Neil_Armstrong/Neil_Armstrong_2.jpg",
+      "person": "Neil_Armstrong",
+      "commons_title": "File:Neil Armstrong.jpg",
+      "licence": "Public domain",
+      "credit": "NASA / Edwin E. Aldrin, Jr.",
+      "source": "https://commons.wikimedia.org/wiki/File:Neil_Armstrong.jpg"
+    },
+    {
+      "file": "enrolled/Neil_Armstrong/Neil_Armstrong_3.jpg",
+      "person": "Neil_Armstrong",
+      "commons_title": "File:Neil Armstrong pose (cropped 2).jpg",
+      "licence": "Public domain",
+      "credit": "Unknown authorUnknown author",
+      "source": "https://commons.wikimedia.org/wiki/File:Neil_Armstrong_pose_(cropped_2).jpg"
+    },
+    {
+      "file": "probe/Neil_Armstrong_1.jpg",
+      "person": "Neil_Armstrong",
+      "commons_title": "File:Neil Armstrong 1962 (cropped).jpg",
+      "licence": "Public domain",
+      "credit": "NASA",
+      "source": "https://commons.wikimedia.org/wiki/File:Neil_Armstrong_1962_(cropped).jpg"
+    },
+    {
+      "file": "probe/Neil_Armstrong_2.jpg",
+      "person": "Neil_Armstrong",
+      "commons_title": "File:Neil Armstrong pose (3x4 cropped).jpg",
+      "licence": "Public domain",
+      "credit": "Unknown authorUnknown author",
+      "source": "https://commons.wikimedia.org/wiki/File:Neil_Armstrong_pose_(3x4_cropped).jpg"
+    },
+    {
+      "file": "enrolled/John_Glenn/John_Glenn_1.jpg",
+      "person": "John_Glenn",
+      "commons_title": "File:John Glenn - STS-95.jpg",
+      "licence": "Public domain",
+      "credit": "Unknown authorUnknown author",
+      "source": "https://commons.wikimedia.org/wiki/File:John_Glenn_-_STS-95.jpg"
+    },
+    {
+      "file": "enrolled/John_Glenn/John_Glenn_2.jpg",
+      "person": "John_Glenn",
+      "commons_title": "File:John Glenn Low Res.jpg",
+      "licence": "Public domain",
+      "credit": "U.S. Senate Historical Office",
+      "source": "https://commons.wikimedia.org/wiki/File:John_Glenn_Low_Res.jpg"
+    },
+    {
+      "file": "enrolled/John_Glenn/John_Glenn_3.jpg",
+      "person": "John_Glenn",
+      "commons_title": "File:John Glenn Low Res crop.jpg",
+      "licence": "Public domain",
+      "credit": "U.S. Senate Historical Office",
+      "source": "https://commons.wikimedia.org/wiki/File:John_Glenn_Low_Res_crop.jpg"
+    },
+    {
+      "file": "probe/John_Glenn_1.jpg",
+      "person": "John_Glenn",
+      "commons_title": "File:John Glenn suiting up.jpg",
+      "licence": "Public domain",
+      "credit": "NASA",
+      "source": "https://commons.wikimedia.org/wiki/File:John_Glenn_suiting_up.jpg"
+    },
+    {
+      "file": "probe/John_Glenn_2.jpg",
+      "person": "John_Glenn",
+      "commons_title": "File:John Glenn in 1960.jpg",
+      "licence": "Public domain",
+      "credit": "NASA",
+      "source": "https://commons.wikimedia.org/wiki/File:John_Glenn_in_1960.jpg"
+    },
+    {
+      "file": "enrolled/Michael_Collins/Michael_Collins_1.jpg",
+      "person": "Michael_Collins",
+      "commons_title": "File:Saturn Apollo Program (6749746).jpg",
+      "licence": "Public domain",
+      "credit": "NASA Marshall Space Flight Center",
+      "source": "https://commons.wikimedia.org/wiki/File:Saturn_Apollo_Program_(6749746).jpg"
+    },
+    {
+      "file": "enrolled/Eileen_Collins/Eileen_Collins_1.jpg",
+      "person": "Eileen_Collins",
+      "commons_title": "File:Eileen Collins (S93-E-5033, 1999-07-24).jpg",
+      "licence": "Public domain",
+      "credit": "This image or video was catalogued by Lyndon B. Johnson Space Center of the United States National Aeronautics and Space",
+      "source": "https://commons.wikimedia.org/wiki/File:Eileen_Collins_(S93-E-5033,_1999-07-24).jpg"
+    },
+    {
+      "file": "enrolled/Eileen_Collins/Eileen_Collins_2.jpg",
+      "person": "Eileen_Collins",
+      "commons_title": "File:Eileen Collins attending a survival training course at Vance Air Force Base, Oklahoma.webp",
+      "licence": "Public domain",
+      "credit": "NASA",
+      "source": "https://commons.wikimedia.org/wiki/File:Eileen_Collins_attending_a_survival_training_course_at_Vance_Air_Force_Base,_Oklahoma.webp"
+    },
+    {
+      "file": "enrolled/Eileen_Collins/Eileen_Collins_3.jpg",
+      "person": "Eileen_Collins",
+      "commons_title": "File:Eileen Collins on STS-93.jpg",
+      "licence": "Public domain",
+      "credit": "NASA",
+      "source": "https://commons.wikimedia.org/wiki/File:Eileen_Collins_on_STS-93.jpg"
+    },
+    {
+      "file": "enrolled/Peggy_Whitson/Peggy_Whitson_1.jpg",
+      "person": "Peggy_Whitson",
+      "commons_title": "File:Astronaut Peggy Whitson at NASM (NHQ201803020004).jpg",
+      "licence": "Public domain",
+      "credit": "Joel Kowsky",
+      "source": "https://commons.wikimedia.org/wiki/File:Astronaut_Peggy_Whitson_at_NASM_(NHQ201803020004).jpg"
+    },
+    {
+      "file": "enrolled/Peggy_Whitson/Peggy_Whitson_2.jpg",
+      "person": "Peggy_Whitson",
+      "commons_title": "File:Peggy Whitson.jpg",
+      "licence": "Public domain",
+      "credit": "NASA",
+      "source": "https://commons.wikimedia.org/wiki/File:Peggy_Whitson.jpg"
+    },
+    {
+      "file": "enrolled/Peggy_Whitson/Peggy_Whitson_3.jpg",
+      "person": "Peggy_Whitson",
+      "commons_title": "File:Peggy Whitson Friday at the Smithsonian's National Air and Space Museum on March 2, 2018 (cropped).jpg",
+      "licence": "Public domain",
+      "credit": "NASA, Joel Kowsky",
+      "source": "https://commons.wikimedia.org/wiki/File:Peggy_Whitson_Friday_at_the_Smithsonian%27s_National_Air_and_Space_Museum_on_March_2,_2018_(cropped).jpg"
+    },
+    {
+      "file": "probe/Peggy_Whitson_1.jpg",
+      "person": "Peggy_Whitson",
+      "commons_title": "File:ISS-05 Peggy Whitson in the Pirs docking compartment.jpg",
+      "licence": "Public domain",
+      "credit": "NASA",
+      "source": "https://commons.wikimedia.org/wiki/File:ISS-05_Peggy_Whitson_in_the_Pirs_docking_compartment.jpg"
+    },
+    {
+      "file": "probe/Peggy_Whitson_2.jpg",
+      "person": "Peggy_Whitson",
+      "commons_title": "File:Peggy Whitson 2016.jpg",
+      "licence": "Public domain",
+      "credit": "James Blair",
+      "source": "https://commons.wikimedia.org/wiki/File:Peggy_Whitson_2016.jpg"
+    },
+    {
+      "file": "enrolled/Scott_Kelly/Scott_Kelly_1.jpg",
+      "person": "Scott_Kelly",
+      "commons_title": "File:Expedition 26 Commander Scott Kelly at Kustanay Airport, Kazakhstan (JPEG).jpg",
+      "licence": "Public domain",
+      "credit": "Bill Ingalls",
+      "source": "https://commons.wikimedia.org/wiki/File:Expedition_26_Commander_Scott_Kelly_at_Kustanay_Airport,_Kazakhstan_(JPEG).jpg"
+    },
+    {
+      "file": "enrolled/Scott_Kelly/Scott_Kelly_2.jpg",
+      "person": "Scott_Kelly",
+      "commons_title": "File:Scott J. Kelly (cropped).jpg",
+      "licence": "Public domain",
+      "credit": "Robert Markowitz",
+      "source": "https://commons.wikimedia.org/wiki/File:Scott_J._Kelly_(cropped).jpg"
+    },
+    {
+      "file": "enrolled/Scott_Kelly/Scott_Kelly_3.jpg",
+      "person": "Scott_Kelly",
+      "commons_title": "File:Scott Kelly, Johnson Space Center portrait, 2019 (cropped) 2.tif",
+      "licence": "Public domain",
+      "credit": "NASA, Johnson Space Center, Bill Ingalls",
+      "source": "https://commons.wikimedia.org/wiki/File:Scott_Kelly,_Johnson_Space_Center_portrait,_2019_(cropped)_2.tif"
+    },
+    {
+      "file": "probe/Scott_Kelly_1.jpg",
+      "person": "Scott_Kelly",
+      "commons_title": "File:Expedition 26 Commander Scott Kelly at Kustanay Airport, Kazakhstan (TIFF).tif",
+      "licence": "Public domain",
+      "credit": "Bill Ingalls",
+      "source": "https://commons.wikimedia.org/wiki/File:Expedition_26_Commander_Scott_Kelly_at_Kustanay_Airport,_Kazakhstan_(TIFF).tif"
+    },
+    {
+      "file": "probe/Scott_Kelly_2.jpg",
+      "person": "Scott_Kelly",
+      "commons_title": "File:Scott Kelly, Johnson Space Center portrait, 2019 (cropped).tif",
+      "licence": "Public domain",
+      "credit": "NASA, Johnson Space Center, Bill Ingalls",
+      "source": "https://commons.wikimedia.org/wiki/File:Scott_Kelly,_Johnson_Space_Center_portrait,_2019_(cropped).tif"
+    },
+    {
+      "file": "enrolled/Ellen_Ochoa/Ellen_Ochoa_1.jpg",
+      "person": "Ellen_Ochoa",
+      "commons_title": "File:Ellen Ochoa (29863224741) (cropped).jpg",
+      "licence": "Public domain",
+      "credit": "NASA on The Commons",
+      "source": "https://commons.wikimedia.org/wiki/File:Ellen_Ochoa_(29863224741)_(cropped).jpg"
+    },
+    {
+      "file": "enrolled/Ellen_Ochoa/Ellen_Ochoa_2.jpg",
+      "person": "Ellen_Ochoa",
+      "commons_title": "File:Ellen Ochoa (cropped).jpg",
+      "licence": "Public domain",
+      "credit": "NASA",
+      "source": "https://commons.wikimedia.org/wiki/File:Ellen_Ochoa_(cropped).jpg"
+    },
+    {
+      "file": "enrolled/Ellen_Ochoa/Ellen_Ochoa_3.jpg",
+      "person": "Ellen_Ochoa",
+      "commons_title": "File:Ellen Ochoa, official portrait (cropped).jpg",
+      "licence": "Public domain",
+      "credit": "Bill Stafford",
+      "source": "https://commons.wikimedia.org/wiki/File:Ellen_Ochoa,_official_portrait_(cropped).jpg"
+    },
+    {
+      "file": "probe/Ellen_Ochoa_1.jpg",
+      "person": "Ellen_Ochoa",
+      "commons_title": "File:STS096-383-005 - STS-096 - Portrait view of MS Ochoa in the Node 1-Unity module - DPLA - c43a537fccee43de94f10635c6080103.jpg",
+      "licence": "Public domain",
+      "credit": "National Aeronautics and Space Administration. Lyndon B. Johnson Space Center. 2/17/1973",
+      "source": "https://commons.wikimedia.org/wiki/File:STS096-383-005_-_STS-096_-_Portrait_view_of_MS_Ochoa_in_the_Node_1-Unity_module_-_DPLA_-_c43a537fccee43de94f10635c6080103.jpg"
+    },
+    {
+      "file": "enrolled/Jessica_Meir/Jessica_Meir_1.jpg",
+      "person": "Jessica_Meir",
+      "commons_title": "File:Jessica Meir Thumbnail (751909826959).jpg",
+      "licence": "Public domain",
+      "credit": "Uploaded by Patricia Moore",
+      "source": "https://commons.wikimedia.org/wiki/File:Jessica_Meir_Thumbnail_(751909826959).jpg"
+    },
+    {
+      "file": "enrolled/Jessica_Meir/Jessica_Meir_2.jpg",
+      "person": "Jessica_Meir",
+      "commons_title": "File:Jessica Meir astronaut candidate.jpg",
+      "licence": "Public domain",
+      "credit": "NASA",
+      "source": "https://commons.wikimedia.org/wiki/File:Jessica_Meir_astronaut_candidate.jpg"
+    },
+    {
+      "file": "enrolled/Jessica_Meir/Jessica_Meir_3.jpg",
+      "person": "Jessica_Meir",
+      "commons_title": "File:NASA Candidate Jessica U Meir.jpg",
+      "licence": "Public domain",
+      "credit": "NASA",
+      "source": "https://commons.wikimedia.org/wiki/File:NASA_Candidate_Jessica_U_Meir.jpg"
+    },
+    {
+      "file": "probe/Jessica_Meir_1.jpg",
+      "person": "Jessica_Meir",
+      "commons_title": "File:Portrait - Astronaut Jessica Meir (NHQ202009150005).jpg",
+      "licence": "Public domain",
+      "credit": "Bill Ingalls",
+      "source": "https://commons.wikimedia.org/wiki/File:Portrait_-_Astronaut_Jessica_Meir_(NHQ202009150005).jpg"
+    },
+    {
+      "file": "probe/Jessica_Meir_2.jpg",
+      "person": "Jessica_Meir",
+      "commons_title": "File:Jessica U. Meir portrait.jpg",
+      "licence": "Public domain",
+      "credit": "Robert Markowitz",
+      "source": "https://commons.wikimedia.org/wiki/File:Jessica_U._Meir_portrait.jpg"
+    },
+    {
+      "file": "enrolled/Victor_Glover/Victor_Glover_1.jpg",
+      "person": "Victor_Glover",
+      "commons_title": "File:Jsc2023e0016433 alt.jpg",
+      "licence": "Public domain",
+      "credit": "Josh Valcarcel",
+      "source": "https://commons.wikimedia.org/wiki/File:Jsc2023e0016433_alt.jpg"
+    },
+    {
+      "file": "enrolled/Victor_Glover/Victor_Glover_2.jpg",
+      "person": "Victor_Glover",
+      "commons_title": "File:Victor Glover Thumbnail (751946499473).jpg",
+      "licence": "Public domain",
+      "credit": "Uploaded by Patricia Moore",
+      "source": "https://commons.wikimedia.org/wiki/File:Victor_Glover_Thumbnail_(751946499473).jpg"
+    },
+    {
+      "file": "enrolled/Victor_Glover/Victor_Glover_3.jpg",
+      "person": "Victor_Glover",
+      "commons_title": "File:Victor Glover in a NASA news conference at the Kennedy Space Center in Florida, U.S. on August 8, 2023.jpg",
+      "licence": "Public domain",
+      "credit": "Kennedy Space Center",
+      "source": "https://commons.wikimedia.org/wiki/File:Victor_Glover_in_a_NASA_news_conference_at_the_Kennedy_Space_Center_in_Florida,_U.S._on_August_8,_2023.jpg"
+    },
+    {
+      "file": "probe/Victor_Glover_1.jpg",
+      "person": "Victor_Glover",
+      "commons_title": "File:Victor J. Glover in 2018.jpg",
+      "licence": "Public domain",
+      "credit": "Robert Markowitz",
+      "source": "https://commons.wikimedia.org/wiki/File:Victor_J._Glover_in_2018.jpg"
+    },
+    {
+      "file": "probe/Victor_Glover_2.jpg",
+      "person": "Victor_Glover",
+      "commons_title": "File:Victor Glover after Crew-1 splashdown.jpg",
+      "licence": "Public domain",
+      "credit": "Bill Ingalls",
+      "source": "https://commons.wikimedia.org/wiki/File:Victor_Glover_after_Crew-1_splashdown.jpg"
+    },
+    {
+      "file": "enrolled/Sunita_Williams/Sunita_Williams_1.jpg",
+      "person": "Sunita_Williams",
+      "commons_title": "File:Sunita Williams in 2018 (cropped).jpg",
+      "licence": "Public domain",
+      "credit": "Robert Markowitz",
+      "source": "https://commons.wikimedia.org/wiki/File:Sunita_Williams_in_2018_(cropped).jpg"
+    },
+    {
+      "file": "enrolled/Sunita_Williams/Sunita_Williams_2.jpg",
+      "person": "Sunita_Williams",
+      "commons_title": "File:Sunita Williams in 2018 (cropped) 2.jpg",
+      "licence": "Public domain",
+      "credit": "Robert Markowitz",
+      "source": "https://commons.wikimedia.org/wiki/File:Sunita_Williams_in_2018_(cropped)_2.jpg"
+    },
+    {
       "file": "probe/unknown_1_1.jpg",
       "person": "unknown_1",
       "commons_title": "File:Alan B. Shepard 1970.jpg",
@@ -185,6 +537,62 @@
       "licence": "Public domain",
       "credit": "Uploaded by Patricia Moore",
       "source": "https://commons.wikimedia.org/wiki/File:Christina_Koch_Thumbnail_(751899268179).jpg"
+    },
+    {
+      "file": "probe/unknown_4_1.jpg",
+      "person": "unknown_4",
+      "commons_title": "File:Anne C. McClain portrait.jpg",
+      "licence": "Public domain",
+      "credit": "Robert Markowitz",
+      "source": "https://commons.wikimedia.org/wiki/File:Anne_C._McClain_portrait.jpg"
+    },
+    {
+      "file": "probe/unknown_5_1.jpg",
+      "person": "unknown_5",
+      "commons_title": "File:Astronaut Frank Rubio works on a 3D bioprinter (iss069e008327).jpg",
+      "licence": "Public domain",
+      "credit": "NASA Johnson Space Center",
+      "source": "https://commons.wikimedia.org/wiki/File:Astronaut_Frank_Rubio_works_on_a_3D_bioprinter_(iss069e008327).jpg"
+    },
+    {
+      "file": "probe/unknown_6_1.jpg",
+      "person": "unknown_6",
+      "commons_title": "File:Astronaut Kjell Lindgren Official Photo.jpg",
+      "licence": "Public domain",
+      "credit": "Robert Markowitz",
+      "source": "https://commons.wikimedia.org/wiki/File:Astronaut_Kjell_Lindgren_Official_Photo.jpg"
+    },
+    {
+      "file": "probe/unknown_7_1.jpg",
+      "person": "unknown_7",
+      "commons_title": "File:ISS-67 Astronaut Raja Chari works on the Food Physiology experiment.jpg",
+      "licence": "Public domain",
+      "credit": "NASA/Raja Chari",
+      "source": "https://commons.wikimedia.org/wiki/File:ISS-67_Astronaut_Raja_Chari_works_on_the_Food_Physiology_experiment.jpg"
+    },
+    {
+      "file": "probe/unknown_8_1.jpg",
+      "person": "unknown_8",
+      "commons_title": "File:Nicole Aunapu Mann portrait.jpg",
+      "licence": "Public domain",
+      "credit": "Robert Markowitz",
+      "source": "https://commons.wikimedia.org/wiki/File:Nicole_Aunapu_Mann_portrait.jpg"
+    },
+    {
+      "file": "probe/unknown_9_1.jpg",
+      "person": "unknown_9",
+      "commons_title": "File:Robert Curbeam.jpg",
+      "licence": "Public domain",
+      "credit": "NASA",
+      "source": "https://commons.wikimedia.org/wiki/File:Robert_Curbeam.jpg"
+    },
+    {
+      "file": "probe/unknown_10_1.jpg",
+      "person": "unknown_10",
+      "commons_title": "File:NASA astronaut Stephanie Wilson (jsc2024e044936).jpg",
+      "licence": "Public domain",
+      "credit": "NASA Johnson Space Center",
+      "source": "https://commons.wikimedia.org/wiki/File:NASA_astronaut_Stephanie_Wilson_(jsc2024e044936).jpg"
     }
   ]
 }

@@ -51,24 +51,54 @@ ACCEPTED_LICENCES = ("public domain", "pd-")
 # Three, because averaging a person's photographs only helps once there is
 # something to average: measured EER falls from 2.71% at two photographs to
 # 0.44% at three (python -m ml.aggregation).
+# Three, because averaging a person's photographs only helps once there is
+# something to average: measured EER falls from 2.71% at two photographs to
+# 0.44% at three (python -m ml.aggregation).
 ENROL_PER_PERSON = 3
-PROBES_PER_PERSON = 1
+PROBES_PER_PERSON = 2
 
-# (folder name, Commons search term)
+# ---------------------------------------------------------------------------
+# Selection rules are FROZEN. They were chosen while diagnosing two specific
+# defects (a crop reused as its own probe; a probe whose only detectable face
+# belonged to a bystander) and are documented in the README. They must not be
+# adjusted in response to a score, which is how a test set stops measuring
+# anything. Whatever this dataset yields is reported as-is.
+# ---------------------------------------------------------------------------
+
+# US federal employees, so their official photographs are public domain by
+# statute. Enough of them that the result carries a usable confidence interval:
+# eight probes could not distinguish 100% from 63%.
 ENROLLED_PEOPLE = [
     ("Grace Hopper",      "Grace Hopper computer scientist"),
     ("Katherine Johnson", "Katherine Johnson NASA"),
     ("Sally Ride",        "Sally Ride astronaut"),
     ("Mae Jemison",       "Mae Jemison astronaut"),
     ("Buzz Aldrin",       "Buzz Aldrin astronaut"),
+    ("Neil Armstrong",    "Neil Armstrong astronaut"),
+    ("John Glenn",        "John Glenn astronaut"),
+    ("Michael Collins",   "Michael Collins astronaut Apollo"),
+    ("Eileen Collins",    "Eileen Collins astronaut"),
+    ("Peggy Whitson",     "Peggy Whitson astronaut"),
+    ("Scott Kelly",       "Scott Kelly astronaut"),
+    ("Ellen Ochoa",       "Ellen Ochoa astronaut"),
+    ("Jessica Meir",      "Jessica Meir astronaut"),
+    ("Victor Glover",     "Victor Glover astronaut"),
+    ("Sunita Williams",   "Sunita Williams astronaut"),
 ]
 
 # Never enrolled: these test that a stranger is rejected rather than
 # force-matched onto the closest enrolled person.
 IMPOSTORS = [
-    ("unknown_1", "Alan Shepard astronaut"),
-    ("unknown_2", "Gus Grissom astronaut"),
-    ("unknown_3", "Christina Koch astronaut"),
+    ("unknown_1",  "Alan Shepard astronaut"),
+    ("unknown_2",  "Gus Grissom astronaut"),
+    ("unknown_3",  "Christina Koch astronaut"),
+    ("unknown_4",  "Anne McClain astronaut"),
+    ("unknown_5",  "Frank Rubio astronaut"),
+    ("unknown_6",  "Kjell Lindgren astronaut"),
+    ("unknown_7",  "Raja Chari astronaut"),
+    ("unknown_8",  "Nicole Mann astronaut"),
+    ("unknown_9",  "Robert Curbeam astronaut"),
+    ("unknown_10", "Stephanie Wilson astronaut"),
 ]
 
 

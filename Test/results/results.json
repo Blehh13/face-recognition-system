@@ -1,23 +1,27 @@
 {
   "summary": {
-    "generated": "2026-09-13 20:01 UTC",
+    "generated": "2026-09-13 20:38 UTC",
+    "accuracy_ci95": [
+      0.7193,
+      0.9503
+    ],
     "engine": "opencv",
     "threshold": 1.012,
-    "people_enrolled": 5,
-    "enrolment_photos": 14,
-    "probes": 8,
-    "genuine_probes": 5,
-    "impostor_probes": 3,
-    "accuracy": 1.0,
+    "people_enrolled": 15,
+    "enrolment_photos": 41,
+    "probes": 32,
+    "genuine_probes": 22,
+    "impostor_probes": 10,
+    "accuracy": 0.875,
     "precision": 1.0,
-    "recall": 1.0,
-    "f1": 1.0,
+    "recall": 0.8182,
+    "f1": 0.9,
     "far": 0.0,
-    "frr": 0.0,
-    "tp": 5,
+    "frr": 0.1818,
+    "tp": 18,
     "fp": 0,
-    "tn": 3,
-    "fn": 0
+    "tn": 10,
+    "fn": 4
   },
   "probes": [
     {
@@ -28,8 +32,20 @@
       "distance": 0.5952,
       "confidence": 0.6652,
       "runner_up": {
-        "name": "Sally Ride",
-        "distance": 1.3008
+        "name": "Michael Collins",
+        "distance": 1.2678
+      }
+    },
+    {
+      "probe": "Ellen_Ochoa_1.jpg",
+      "expected": "Ellen Ochoa",
+      "predicted": "Ellen Ochoa",
+      "correct": true,
+      "distance": 0.6826,
+      "confidence": 0.6266,
+      "runner_up": {
+        "name": "Eileen Collins",
+        "distance": 1.1858
       }
     },
     {
@@ -40,8 +56,68 @@
       "distance": 0.6961,
       "confidence": 0.6208,
       "runner_up": {
+        "name": "Neil Armstrong",
+        "distance": 1.2492
+      }
+    },
+    {
+      "probe": "Grace_Hopper_2.jpg",
+      "expected": "Grace Hopper",
+      "predicted": "Grace Hopper",
+      "correct": true,
+      "distance": 0.4932,
+      "confidence": 0.7133,
+      "runner_up": {
         "name": "Katherine Johnson",
-        "distance": 1.2656
+        "distance": 1.2254
+      }
+    },
+    {
+      "probe": "Jessica_Meir_1.jpg",
+      "expected": "Jessica Meir",
+      "predicted": "Jessica Meir",
+      "correct": true,
+      "distance": 0.491,
+      "confidence": 0.7144,
+      "runner_up": {
+        "name": "Peggy Whitson",
+        "distance": 1.1869
+      }
+    },
+    {
+      "probe": "Jessica_Meir_2.jpg",
+      "expected": "Jessica Meir",
+      "predicted": "Jessica Meir",
+      "correct": true,
+      "distance": 0.5267,
+      "confidence": 0.6971,
+      "runner_up": {
+        "name": "Neil Armstrong",
+        "distance": 1.1313
+      }
+    },
+    {
+      "probe": "John_Glenn_1.jpg",
+      "expected": "John Glenn",
+      "predicted": "Unknown",
+      "correct": false,
+      "distance": 1.2422,
+      "confidence": 0.4271,
+      "runner_up": {
+        "name": "Peggy Whitson",
+        "distance": 1.2469
+      }
+    },
+    {
+      "probe": "John_Glenn_2.jpg",
+      "expected": "John Glenn",
+      "predicted": "Unknown",
+      "correct": false,
+      "distance": 1.0627,
+      "confidence": 0.4829,
+      "runner_up": {
+        "name": "Neil Armstrong",
+        "distance": 1.1756
       }
     },
     {
@@ -57,6 +133,18 @@
       }
     },
     {
+      "probe": "Katherine_Johnson_2.jpg",
+      "expected": "Katherine Johnson",
+      "predicted": "Katherine Johnson",
+      "correct": true,
+      "distance": 0.6742,
+      "confidence": 0.6302,
+      "runner_up": {
+        "name": "Grace Hopper",
+        "distance": 1.2439
+      }
+    },
+    {
       "probe": "Mae_Jemison_1.jpg",
       "expected": "Mae Jemison",
       "predicted": "Mae Jemison",
@@ -69,6 +157,66 @@
       }
     },
     {
+      "probe": "Mae_Jemison_2.jpg",
+      "expected": "Mae Jemison",
+      "predicted": "Mae Jemison",
+      "correct": true,
+      "distance": 0.834,
+      "confidence": 0.5648,
+      "runner_up": {
+        "name": "Sally Ride",
+        "distance": 1.2509
+      }
+    },
+    {
+      "probe": "Neil_Armstrong_1.jpg",
+      "expected": "Neil Armstrong",
+      "predicted": "Neil Armstrong",
+      "correct": true,
+      "distance": 0.7215,
+      "confidence": 0.6101,
+      "runner_up": {
+        "name": "Peggy Whitson",
+        "distance": 1.2497
+      }
+    },
+    {
+      "probe": "Neil_Armstrong_2.jpg",
+      "expected": "Neil Armstrong",
+      "predicted": "Neil Armstrong",
+      "correct": true,
+      "distance": 0.5557,
+      "confidence": 0.6834,
+      "runner_up": {
+        "name": "Victor Glover",
+        "distance": 1.231
+      }
+    },
+    {
+      "probe": "Peggy_Whitson_1.jpg",
+      "expected": "Peggy Whitson",
+      "predicted": "Unknown",
+      "correct": false,
+      "distance": 1.0229,
+      "confidence": 0.4963,
+      "runner_up": {
+        "name": "Ellen Ochoa",
+        "distance": 1.2215
+      }
+    },
+    {
+      "probe": "Peggy_Whitson_2.jpg",
+      "expected": "Peggy Whitson",
+      "predicted": "Peggy Whitson",
+      "correct": true,
+      "distance": 0.7596,
+      "confidence": 0.5944,
+      "runner_up": {
+        "name": "Sally Ride",
+        "distance": 1.2598
+      }
+    },
+    {
       "probe": "Sally_Ride_1.jpg",
       "expected": "Sally Ride",
       "predicted": "Sally Ride",
@@ -76,8 +224,80 @@
       "distance": 0.9935,
       "confidence": 0.5064,
       "runner_up": {
-        "name": "Buzz Aldrin",
-        "distance": 1.3203
+        "name": "Peggy Whitson",
+        "distance": 1.1856
+      }
+    },
+    {
+      "probe": "Sally_Ride_2.jpg",
+      "expected": "Sally Ride",
+      "predicted": "Sally Ride",
+      "correct": true,
+      "distance": 0.9343,
+      "confidence": 0.5273,
+      "runner_up": {
+        "name": "John Glenn",
+        "distance": 1.2641
+      }
+    },
+    {
+      "probe": "Scott_Kelly_1.jpg",
+      "expected": "Scott Kelly",
+      "predicted": "Scott Kelly",
+      "correct": true,
+      "distance": 0.66,
+      "confidence": 0.6363,
+      "runner_up": {
+        "name": "Neil Armstrong",
+        "distance": 1.2356
+      }
+    },
+    {
+      "probe": "Scott_Kelly_2.jpg",
+      "expected": "Scott Kelly",
+      "predicted": "Scott Kelly",
+      "correct": true,
+      "distance": 0.4407,
+      "confidence": 0.7394,
+      "runner_up": {
+        "name": "Neil Armstrong",
+        "distance": 1.1832
+      }
+    },
+    {
+      "probe": "Victor_Glover_1.jpg",
+      "expected": "Victor Glover",
+      "predicted": "Victor Glover",
+      "correct": true,
+      "distance": 0.6154,
+      "confidence": 0.6561,
+      "runner_up": {
+        "name": "John Glenn",
+        "distance": 1.2519
+      }
+    },
+    {
+      "probe": "Victor_Glover_2.jpg",
+      "expected": "Victor Glover",
+      "predicted": "Unknown",
+      "correct": false,
+      "distance": 1.0594,
+      "confidence": 0.484,
+      "runner_up": {
+        "name": "Scott Kelly",
+        "distance": 1.2045
+      }
+    },
+    {
+      "probe": "unknown_10_1.jpg",
+      "expected": "Unknown",
+      "predicted": "Unknown",
+      "correct": true,
+      "distance": 1.218,
+      "confidence": 0.4342,
+      "runner_up": {
+        "name": "Sunita Williams",
+        "distance": 1.2872
       }
     },
     {
@@ -85,11 +305,11 @@
       "expected": "Unknown",
       "predicted": "Unknown",
       "correct": true,
-      "distance": 1.2766,
-      "confidence": 0.4171,
+      "distance": 1.2131,
+      "confidence": 0.4357,
       "runner_up": {
-        "name": "Grace Hopper",
-        "distance": 1.3351
+        "name": "Ellen Ochoa",
+        "distance": 1.2564
       }
     },
     {
@@ -97,11 +317,11 @@
       "expected": "Unknown",
       "predicted": "Unknown",
       "correct": true,
-      "distance": 1.2654,
-      "confidence": 0.4203,
+      "distance": 1.2261,
+      "confidence": 0.4318,
       "runner_up": {
-        "name": "Buzz Aldrin",
-        "distance": 1.3148
+        "name": "Katherine Johnson",
+        "distance": 1.2654
       }
     },
     {
@@ -109,11 +329,83 @@
       "expected": "Unknown",
       "predicted": "Unknown",
       "correct": true,
-      "distance": 1.2418,
-      "confidence": 0.4272,
+      "distance": 1.0894,
+      "confidence": 0.4742,
+      "runner_up": {
+        "name": "Scott Kelly",
+        "distance": 1.1833
+      }
+    },
+    {
+      "probe": "unknown_4_1.jpg",
+      "expected": "Unknown",
+      "predicted": "Unknown",
+      "correct": true,
+      "distance": 1.2329,
+      "confidence": 0.4298,
       "runner_up": {
         "name": "Sally Ride",
-        "distance": 1.2548
+        "distance": 1.2517
+      }
+    },
+    {
+      "probe": "unknown_5_1.jpg",
+      "expected": "Unknown",
+      "predicted": "Unknown",
+      "correct": true,
+      "distance": 1.1768,
+      "confidence": 0.4466,
+      "runner_up": {
+        "name": "Eileen Collins",
+        "distance": 1.2134
+      }
+    },
+    {
+      "probe": "unknown_6_1.jpg",
+      "expected": "Unknown",
+      "predicted": "Unknown",
+      "correct": true,
+      "distance": 1.1789,
+      "confidence": 0.446,
+      "runner_up": {
+        "name": "Sally Ride",
+        "distance": 1.2263
+      }
+    },
+    {
+      "probe": "unknown_7_1.jpg",
+      "expected": "Unknown",
+      "predicted": "Unknown",
+      "correct": true,
+      "distance": 1.2371,
+      "confidence": 0.4286,
+      "runner_up": {
+        "name": "Neil Armstrong",
+        "distance": 1.2619
+      }
+    },
+    {
+      "probe": "unknown_8_1.jpg",
+      "expected": "Unknown",
+      "predicted": "Unknown",
+      "correct": true,
+      "distance": 1.1236,
+      "confidence": 0.4632,
+      "runner_up": {
+        "name": "Peggy Whitson",
+        "distance": 1.2411
+      }
+    },
+    {
+      "probe": "unknown_9_1.jpg",
+      "expected": "Unknown",
+      "predicted": "Unknown",
+      "correct": true,
+      "distance": 1.1886,
+      "confidence": 0.443,
+      "runner_up": {
+        "name": "Mae Jemison",
+        "distance": 1.2024
       }
     }
   ]

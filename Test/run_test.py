@@ -37,6 +37,23 @@ sys.path.insert(0, os.path.dirname(HERE))
 IMAGE_EXTS = (".jpg", ".jpeg", ".png", ".webp", ".bmp")
 
 
+def wilson_interval(correct: int, total: int, z: float = 1.96) -> tuple[float, float]:
+    """
+    95% confidence interval for a proportion (Wilson score).
+
+    Reported because a bare accuracy from a small set invites over-reading:
+    8 of 8 correct is consistent with a true accuracy of 63%. The interval is
+    the honest width of what the experiment can support.
+    """
+    if total == 0:
+        return (0.0, 0.0)
+    p = correct / total
+    denom = 1 + z * z / total
+    centre = (p + z * z / (2 * total)) / denom
+    spread = z * ((p * (1 - p) / total + z * z / (4 * total * total)) ** 0.5) / denom
+    return (max(0.0, centre - spread), min(1.0, centre + spread))
+
+
 def expected_label(filename: str) -> str:
     """Ground truth from the filename: unknown_* is an impostor."""
     stem = os.path.splitext(filename)[0]
@@ -137,8 +154,10 @@ def main() -> int:
     recall = tp / (tp + fn) if (tp + fn) else 0.0
     f1 = 2 * precision * recall / (precision + recall) if (precision + recall) else 0.0
 
+    ci_low, ci_high = wilson_interval(tp + tn, len(rows))
     summary = {
         "generated": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
+        "accuracy_ci95": [round(ci_low, 4), round(ci_high, 4)],
         "engine": engine_used,
         "threshold": threshold,
         "people_enrolled": len(enrolment),
@@ -163,6 +182,7 @@ def main() -> int:
 
     print("\n" + "=" * 62)
     print(f"  Accuracy   {accuracy * 100:6.2f}%   ({tp + tn}/{len(rows)} probes correct)")
+    print(f"             95% CI [{ci_low * 100:.1f}%, {ci_high * 100:.1f}%]")
     print(f"  Precision  {precision:6.4f}")
     print(f"  Recall     {recall:6.4f}")
     print(f"  F1         {f1:6.4f}")
@@ -191,6 +211,8 @@ def _write_markdown(path: str, summary: dict, rows: list[dict], enrolment: dict)
         "| metric | value |",
         "|---|---:|",
         f"| Accuracy | **{summary['accuracy'] * 100:.2f}%** |",
+        f"| 95% confidence interval | {summary['accuracy_ci95'][0] * 100:.1f}% – "
+        f"{summary['accuracy_ci95'][1] * 100:.1f}% |",
         f"| Precision | {summary['precision']:.4f} |",
         f"| Recall | {summary['recall']:.4f} |",
         f"| F1 | {summary['f1']:.4f} |",
@@ -223,12 +245,25 @@ def _write_markdown(path: str, summary: dict, rows: list[dict], enrolment: dict)
             f"| `{r['probe']}` | {r['expected']} | {r['predicted']} | "
             f"{distance} | {runner} | {'PASS' if r['correct'] else 'FAIL'} |"
         )
+    failures = [r for r in rows if not r["correct"]]
     lines += [
         "",
         "The runner-up column is the next closest enrolled person. A large gap "
         "between the match and the runner-up means the decision was not marginal.",
         "",
     ]
+    if failures:
+        lines += ["## Failures", ""]
+        for r in failures:
+            distance = "n/a" if r["distance"] is None else f"{r['distance']:.3f}"
+            lines.append(f"- `{r['probe']}`: expected **{r['expected']}**, "
+                         f"got **{r['predicted']}** at distance {distance}.")
+        lines.append("")
+    else:
+        lines += ["Every probe was classified correctly. With "
+                  f"{summary['probes']} probes the 95% confidence interval on that is "
+                  f"{summary['accuracy_ci95'][0] * 100:.1f}%–"
+                  f"{summary['accuracy_ci95'][1] * 100:.1f}%.", ""]
     with open(path, "w", encoding="utf-8") as handle:
         handle.write("\n".join(lines))
 

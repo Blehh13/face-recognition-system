@@ -11,32 +11,46 @@ evaluation of how well it actually works.
 
 ## Measured performance
 
-Two evaluations, both reproducible from this repository.
+Two evaluations, both reproducible from this repository, neither tuned to the
+numbers it reports.
 
-**1 — The committed test set** ([`Test/`](Test/)): 5 people enrolled from 3
-public-domain photographs each, then 8 probes identified against them. Every
-probe is a *different* photograph from the ones enrolled, and 3 of the 8 are
-people who were never enrolled and must be rejected.
+**1 — The committed test set** ([`Test/`](Test/)): 15 people enrolled from 41
+public-domain photographs, then 32 probes identified against them. Every probe
+is a *different* photograph from the ones enrolled, and 10 are people who were
+never enrolled and must be rejected.
 
-| | accuracy | precision | recall | F1 | FAR | FRR |
-|---|---:|---:|---:|---:|---:|---:|
-| YuNet + SFace, threshold 1.012 | **100%** | 1.00 | 1.00 | 1.00 | 0% | 0% |
+| metric | value |
+|---|---:|
+| Accuracy | **87.5%** (28/32), 95% CI 71.9–95.0% |
+| Precision | 1.00 |
+| Recall | 0.82 |
+| False accept rate | **0%** |
+| False reject rate | 18.2% |
 
-Reproduce with `python Test/run_test.py`; per-probe distances in
-[`Test/results/results.md`](Test/results/results.md). Eight probes cannot
-separate 100% from 90% — see the caveats in [`Test/README.md`](Test/README.md).
+**No stranger was ever accepted**, and every name produced was correct. Four
+genuine faces were rejected — all at distances just past the gate, and one
+(John Glenn, enrolled from Mercury-era photographs and probed decades later)
+farther from himself than several unrelated people are. Loosening the threshold
+would recover three of the four on this set, and that change was deliberately
+*not* made: see [`Test/README.md`](Test/README.md) for why.
 
-**2 — LFW, at scale** ([`ml/`](ml/)): identities split so that nobody in the
-evaluation was ever used to fit anything. Enrolling 3 photographs per person
-and averaging them:
+**2 — LFW, at scale** ([`ml/`](ml/)): identities split so nobody in the
+evaluation was used to fit anything. Enrolling 3 photographs per person and
+averaging them:
 
-| engine | EER | notes |
-|---|---:|---|
-| **YuNet + SFace** (default) | **0.44%** | detection + 5-point alignment + 128-d embedding |
-| dlib ResNet-128 (optional) | 6.14% | needs a C++ toolchain to install |
+| engine | EER |
+|---|---:|
+| **YuNet + SFace** (default) | **0.44%** |
+| dlib ResNet-128 (optional) | 6.14% |
 
 Produced by `python -m ml.aggregation`. Raw output in
 [`ml/results/`](ml/results/).
+
+> An earlier version of this README reported 100% on an 8-probe test set. That
+> number was an artefact: the dataset's selection rules had been adjusted after
+> seeing which probes failed, and 8 probes cannot distinguish 100% from 63%
+> anyway. The rules are now frozen, the set is four times larger, and the
+> result is reported with its confidence interval.
 
 ---
 

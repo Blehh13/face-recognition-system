@@ -1,0 +1,14 @@
+# Keep the build context small and free of local state.
+.git
+frontend/node_modules
+ml/cache
+ml/checkpoints
+database
+__pycache__
+**/__pycache__
+*.pyc
+.pytest_cache
+Test/results
+
+# Built inside the image by the node stage, never copied from the host.
+static/dist

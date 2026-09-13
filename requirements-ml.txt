@@ -1,0 +1,14 @@
+# Training and benchmarking only — NOT needed to run the application.
+#
+# Kept separate because torch is ~2.5 GB and the app never imports it; folding
+# it into requirements.txt made every deployment image carry a training stack
+# it would never use.
+#
+#   pip install -r requirements-ml.txt
+#
+# For GPU, install from the CUDA index instead:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu126
+# Note: PyPI's Windows wheel for Python 3.14 is CPU-only.
+
+torch>=2.4
+torchvision>=0.19

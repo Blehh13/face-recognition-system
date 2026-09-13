@@ -34,12 +34,9 @@ matplotlib>=3.9
 seaborn>=0.13
 tqdm>=4.66
 
+# --- Serving ----------------------------------------------------------------
+# Only needed to run behind a real WSGI server (Docker/deployment).
+gunicorn>=21.2
+
 # --- Tests ------------------------------------------------------------------
 pytest>=8.3
-
-# --- Training (optional; only needed for the ml/ pipeline) ------------------
-# CPU wheels come from PyPI. For GPU, install from the CUDA index instead:
-#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu126
-# Note: PyPI's Windows wheel for Python 3.14 is CPU-only.
-torch>=2.4
-torchvision>=0.19

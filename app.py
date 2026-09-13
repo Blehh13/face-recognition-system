@@ -20,6 +20,14 @@ Configuration (environment variables):
   FACEREC_HOST    interface to bind   (default 127.0.0.1 — loopback only)
   FACEREC_PORT    port                (default 5000)
   FACEREC_SECRET  Flask secret key    (default: a dev-only value)
+  FACEREC_DB      database path       (default database/enrolled_faces.json).
+                  A .sqlite/.db extension selects the multi-process-safe
+                  backend, which a deployment behind gunicorn requires.
+  FACEREC_DEMO    "1" advertises this as a throwaway public demo via
+                  /api/config. The database is emptied by the container
+                  entrypoint, not here: workers initialise lazily, so clearing
+                  on first use meant the second worker wiped the database
+                  mid-session when it handled its first request.
 """
 
 import base64
@@ -77,12 +85,15 @@ def get_liveness():
     return _liveness
 
 
+DEMO_MODE = os.environ.get("FACEREC_DEMO", "").strip() == "1"
+
+
 def get_system():
     global _system
     if _system is None:
         from src.system import FaceRecognitionSystem
-        _system = FaceRecognitionSystem()
-        logger.info("FaceRecognitionSystem initialised.")
+        _system = FaceRecognitionSystem(db_path=os.environ.get("FACEREC_DB") or None)
+        logger.info("FaceRecognitionSystem initialised (demo=%s).", DEMO_MODE)
     return _system
 
 
@@ -318,6 +329,12 @@ def api_remove():
 @app.route("/health")
 def health():
     return jsonify({"status": "ok"})
+
+
+@app.route("/api/config")
+def api_config():
+    """Runtime facts the frontend needs, chiefly whether this is a public demo."""
+    return jsonify({"demo": DEMO_MODE})
 
 
 @app.errorhandler(413)

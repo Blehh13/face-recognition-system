@@ -19,6 +19,7 @@ from dataclasses import dataclass
 from src.detector import FaceDetector
 from src.embedder import FaceEmbedder
 from src.database import FaceDatabase
+from src.sqlite_store import open_database
 from src.matcher import FaceMatcher, MatchResult
 
 logger = logging.getLogger(__name__)
@@ -97,7 +98,9 @@ class FaceRecognitionSystem:
             self.embedder = FaceEmbedder(model=embedding_model)
             self.engine_name = "dlib"
 
-        self.database = FaceDatabase(db_path) if db_path else FaceDatabase()
+        # open_database picks SQLite for .db/.sqlite paths and JSON otherwise,
+        # so a multi-process deployment selects a safe backend by filename.
+        self.database = open_database(db_path) if db_path else FaceDatabase()
         self.matcher  = FaceMatcher(threshold=threshold, metric=distance_metric)
 
         # Comparing vectors from two different models yields nonsense, so fail

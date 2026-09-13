@@ -158,3 +158,34 @@ def test_cosine_confidence_is_half_at_threshold():
 def test_invalid_metric_rejected():
     with pytest.raises(ValueError):
         FaceMatcher(metric="manhattan")
+
+
+# ------------------------------------------------------- match explanation
+
+def test_candidates_are_ranked_nearest_first(database):
+    result = FaceMatcher(threshold=0.6).match(vec(1), database)
+    candidates = result.ranked_candidates()
+    assert [c["name"] for c in candidates] == ["Alice", "Bob"]
+    assert candidates[0]["distance"] <= candidates[1]["distance"]
+
+
+def test_candidates_mark_which_cleared_the_threshold(database):
+    result = FaceMatcher(threshold=0.6).match(vec(1), database)
+    candidates = result.ranked_candidates()
+    assert candidates[0]["accepted"] is True     # exact match
+    assert candidates[1]["accepted"] is False    # unrelated vector
+
+
+def test_candidates_respect_the_limit():
+    db = {f"p{i}": [vec(i)] for i in range(20)}
+    assert len(FaceMatcher(threshold=0.6).match(vec(0), db).ranked_candidates(limit=3)) == 3
+
+
+def test_candidates_are_empty_without_a_database():
+    assert FaceMatcher(threshold=0.6).match(vec(1), {}).ranked_candidates() == []
+
+
+def test_candidates_are_json_safe(database):
+    payload = FaceMatcher(threshold=0.6).match(vec(1), database).to_dict()
+    json.dumps(payload, allow_nan=False)
+    assert payload["candidates"][0]["name"] == "Alice"

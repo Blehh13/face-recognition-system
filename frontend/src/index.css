@@ -720,3 +720,111 @@ input {
     width: 100%;
   }
 }
+
+/* ============================================================
+   Match explanation
+   ============================================================ */
+
+.why {
+  margin-top: 10px;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+}
+
+.why-summary {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--accent);
+  cursor: pointer;
+  list-style: none;
+}
+
+.why-summary::-webkit-details-marker {
+  display: none;
+}
+
+.why-summary::before {
+  content: "+ ";
+  font-weight: 600;
+}
+
+.why[open] .why-summary::before {
+  content: "- ";
+}
+
+.why-body {
+  margin-top: 10px;
+}
+
+.why-scale {
+  position: relative;
+  height: 14px;
+  margin-bottom: 2px;
+}
+
+.why-tick-label {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: var(--text-sub);
+  white-space: nowrap;
+}
+
+.why-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 24px;
+  font-size: 12px;
+}
+
+.why-name {
+  width: 34%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-sub);
+}
+
+.why-bar {
+  position: relative;
+  flex: 1;
+  height: 10px;
+  background: var(--muted);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.why-fill {
+  display: block;
+  height: 100%;
+  background: var(--text-sub);
+  border-radius: 5px;
+}
+
+.why-fill.is-accepted {
+  background: var(--success);
+}
+
+/* The accept/reject line, drawn over every bar at the same position. */
+.why-threshold {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 2px;
+  background: var(--accent);
+}
+
+.why-distance {
+  width: 44px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.why-note {
+  font-size: 11px;
+  color: var(--text-sub);
+  margin-top: 8px;
+}

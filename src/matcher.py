@@ -90,7 +90,7 @@ class MatchResult:
     metric: str                # 'euclidean' or 'cosine'
     scores: dict[str, float] = field(default_factory=dict)  # {name: best_distance}
 
-    def to_dict(self) -> dict:
+    def to_dict(self, max_candidates: int = 5) -> dict:
         """JSON-serialisable view. Non-finite numbers are emitted as null."""
         distance = _json_safe(self.distance)
         return {
@@ -103,7 +103,37 @@ class MatchResult:
             "metric": self.metric,
             # True when there was simply nobody to compare against.
             "no_candidates": not self.scores,
+            "candidates": self.ranked_candidates(max_candidates),
         }
+
+    def ranked_candidates(self, limit: int = 5) -> list[dict]:
+        """
+        Every enrolled person this face was compared against, nearest first.
+
+        These distances are computed anyway to find the winner; discarding them
+        threw away the answer to the only question a user actually asks when a
+        result looks wrong — "who else did it consider, and by how much?". A
+        match at 0.41 with the runner-up at 0.43 is a coin toss worth
+        distrusting; the same match with the runner-up at 0.85 is not.
+        """
+        ordered = sorted(self.scores.items(), key=lambda kv: kv[1])[:limit]
+        return [
+            {
+                "name": name,
+                "distance": round(_json_safe(d), 4) if _json_safe(d) is not None else None,
+                "accepted": bool(self._accepts(d)),
+            }
+            for name, d in ordered
+        ]
+
+    def _accepts(self, distance: float) -> bool:
+        """Whether *distance* clears this result's own gate, in its own metric."""
+        if not math.isfinite(distance):
+            return False
+        if self.metric == "euclidean":
+            return distance <= self.threshold_used
+        # In cosine mode `scores` holds 1 - similarity.
+        return (1.0 - distance) >= self.threshold_used
 
     def confidence(self) -> float:
         """

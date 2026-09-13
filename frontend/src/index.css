@@ -518,6 +518,49 @@ input {
   cursor: not-allowed;
 }
 
+/*
+ * States the consequence of the current threshold in plain words. A bare
+ * number hides the fact that 0.79 accepts ~40% of strangers against 0.6% at
+ * 0.60, which is not a difference anyone should have to discover by being
+ * misidentified.
+ */
+.risk {
+  font-size: 12px;
+  margin-top: 6px;
+  color: var(--text-sub);
+}
+
+.risk-warn {
+  color: var(--warning);
+  font-weight: 500;
+}
+
+.risk-danger {
+  color: var(--danger);
+  font-weight: 500;
+}
+
+.btn-link {
+  display: inline-block;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.btn-link:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.btn-link:disabled {
+  color: var(--text-sub);
+  cursor: not-allowed;
+}
+
 /* ============================================================
    Results
    ============================================================ */

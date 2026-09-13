@@ -1,5 +1,57 @@
 import { useState, useRef, useEffect } from 'react'
 
+/*
+ * Measured false-accept / false-reject rates for the dlib engine, from 3,000
+ * impostor and 3,000 genuine LFW pairs on identities the model never saw
+ * (python -m ml.calibrate). [threshold, FAR, FRR].
+ *
+ * This is here because a bare number is not a decision: 0.79 looks like a
+ * small nudge from 0.60 but accepts 40% of strangers instead of 0.6%. The
+ * slider now states the consequence rather than leaving it to be discovered.
+ */
+const ERROR_CURVE = [
+  [0.30, 0.0000, 0.9533], [0.35, 0.0000, 0.8383], [0.40, 0.0000, 0.6357],
+  [0.45, 0.0000, 0.4130], [0.50, 0.0000, 0.2317], [0.55, 0.0003, 0.1213],
+  [0.60, 0.0063, 0.0517], [0.65, 0.0330, 0.0233], [0.70, 0.0897, 0.0130],
+  [0.75, 0.2217, 0.0063], [0.80, 0.4053, 0.0033], [0.85, 0.6057, 0.0000],
+  [0.90, 0.7937, 0.0000],
+]
+
+const RECOMMENDED = 0.60
+
+function ratesAt(threshold) {
+  const first = ERROR_CURVE[0]
+  const last = ERROR_CURVE[ERROR_CURVE.length - 1]
+  if (threshold <= first[0]) return { far: first[1], frr: first[2] }
+  if (threshold >= last[0]) return { far: last[1], frr: last[2] }
+  for (let i = 0; i < ERROR_CURVE.length - 1; i++) {
+    const [t0, far0, frr0] = ERROR_CURVE[i]
+    const [t1, far1, frr1] = ERROR_CURVE[i + 1]
+    if (threshold >= t0 && threshold <= t1) {
+      const k = (threshold - t0) / (t1 - t0)
+      return { far: far0 + k * (far1 - far0), frr: frr0 + k * (frr1 - frr0) }
+    }
+  }
+  return { far: last[1], frr: last[2] }
+}
+
+function describeRisk(threshold) {
+  const { far, frr } = ratesAt(threshold)
+  // "1 in N" stops being honest once N approaches 1: at FAR 0.79 it rounds to
+  // "1 in 1". Past a half, say it straight.
+  let strangers
+  if (far < 0.001) strangers = 'almost never matches a stranger'
+  else if (far >= 0.5) strangers = `most strangers will match (${Math.round(far * 100)}%)`
+  else if (far >= 0.25) strangers = `about ${Math.round(far * 100)}% of strangers will match`
+  else strangers = `about 1 in ${Math.round(1 / far)} strangers may match`
+  const missed = `misses about ${Math.round(frr * 100)}% of real matches`
+  let tone = 'ok'
+  if (far >= 0.20) tone = 'danger'
+  else if (far >= 0.03) tone = 'warn'
+  else if (frr >= 0.25) tone = 'warn'
+  return { text: `${strangers} · ${missed}`, tone }
+}
+
 export default function IdentifyPanel({ onIdentified, onError }) {
   const [file, setFile] = useState(null)
   const [preview, setPreview] = useState(null)
@@ -8,6 +60,7 @@ export default function IdentifyPanel({ onIdentified, onError }) {
   const [running, setRunning] = useState(false)
   const [inlineError, setInlineError] = useState(null)
   const inputRef = useRef(null)
+  const risk = describeRisk(threshold)
 
   useEffect(() => {
     if (!file) {
@@ -133,9 +186,19 @@ export default function IdentifyPanel({ onIdentified, onError }) {
           />
           <span className="threshold-value">{threshold.toFixed(2)}</span>
         </div>
-        <p className="upload-hint">
-          Lower is stricter: fewer matches, but more certain ones.
-        </p>
+
+        <p className={`risk risk-${risk.tone}`}>{risk.text}</p>
+
+        {Math.abs(threshold - RECOMMENDED) > 0.005 && (
+          <button
+            type="button"
+            className="btn-link"
+            onClick={() => setThreshold(RECOMMENDED)}
+            disabled={running}
+          >
+            Reset to the recommended {RECOMMENDED.toFixed(2)}
+          </button>
+        )}
       </div>
 
       {inlineError && <p className="error-text">{inlineError}</p>}

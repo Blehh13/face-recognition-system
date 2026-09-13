@@ -50,6 +50,37 @@ The empty state, and the same layout at phone width:
 
 ---
 
+## Beyond the brief
+
+Three additions that go past "enroll and identify":
+
+**Every match explains itself.** The matcher already computed the distance to
+every enrolled person and then discarded all but the winner. Results now show
+the ranked candidates against the accept threshold, because the gap between
+first and second place is what tells you whether to trust a match: 0.41 with a
+runner-up at 0.43 is nearly a coin toss, 0.41 against 0.85 is decisive.
+
+**Enroll and identify from the camera.** A capture becomes an ordinary file and
+takes the same path as an upload. The preview is mirrored to read like a
+mirror but the capture is un-mirrored before upload, or every stored face would
+be a flipped version of the person.
+
+**Advisory liveness detection.** Face matching cannot tell a person from a
+photograph of that person, so a printed photo held to the camera authenticates
+as whoever is in it. MiniFASNetV2 (Apache 2.0) now scores each face and flags
+likely presentation attacks.
+
+It warns rather than blocks, deliberately. Genuine photographs score ~0.62-0.77
+live here rather than the 0.95+ a confident detector would give, and brightening
+a genuine photo was enough to flip the prediction. The spoof side is also
+unvalidated — proving it needs real printed and replayed captures from the
+target camera, which we did not have — so the false-reject behaviour is measured
+and the false-accept behaviour is not. Gating access on that would reject real
+people; promoting it to a hard gate is one line once it has been measured on the
+deployment hardware.
+
+---
+
 ## Three findings worth reading
 
 **1. The system's own threshold was never validated — now it is.** The 0.60

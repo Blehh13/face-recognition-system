@@ -26,16 +26,28 @@ model card. The raw output is committed in [`ml/results/`](ml/results/).
 
 ## The interface
 
-Identifying a face that matches an enrolled person — green border, the name,
-and the distance/similarity/confidence behind it:
+A match, with its reasoning open. The bars show the distance to every enrolled
+person against the accept threshold — what matters is the gap between first and
+second place, which is the difference between a confident result and a coin
+toss:
 
-![Identifying a known face](docs/screenshots/identify-match.png)
+![Identifying a known face, with the candidate comparison expanded](docs/screenshots/identify-match.png)
 
-A face that clears detection but not the rejection threshold. The amber border
-and "Not recognised" are deliberately distinct from an error state: the system
-worked, the person simply is not enrolled.
+A face that clears detection but not the threshold. Amber and "Not recognised"
+are deliberately distinct from an error: the system worked, the person simply
+is not enrolled.
 
 ![A face that is not recognised](docs/screenshots/identify-unknown.png)
+
+The strictness control states the measured consequence of its own setting, so
+loosening it is a decision rather than an accident. At 0.79 more than a third of
+strangers would match:
+
+![The strictness slider warning that 37% of strangers will match](docs/screenshots/threshold-risk.png)
+
+Enrolment and identification also work straight from the camera:
+
+![Capturing a face from the device camera](docs/screenshots/camera-capture.png)
 
 A photo containing more than one face is refused at enrolment rather than
 storing every face under one name, which would silently poison that identity:
@@ -47,6 +59,9 @@ The empty state, and the same layout at phone width:
 | First run | 390px |
 |---|---|
 | ![Empty state](docs/screenshots/empty-state.png) | ![Mobile layout](docs/screenshots/mobile.png) |
+
+> Faces shown are Grace Hopper (US Navy photograph, public domain) and an image
+> from LFW, the dataset this project benchmarks against.
 
 ---
 

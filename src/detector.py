@@ -3,11 +3,14 @@ detector.py — Face detection module.
 
 Wraps face_recognition's face detection (HOG model, CPU-friendly) and
 optionally a CNN model when a CUDA-capable GPU is available.
+
+Colour convention: every function here takes and returns **RGB** arrays,
+matching what `face_recognition` expects. Callers holding OpenCV output
+(BGR) must convert before calling in — see `bgr_to_rgb`.
 """
 
 import face_recognition
 import numpy as np
-from PIL import Image
 import cv2
 import logging
 
@@ -40,22 +43,21 @@ class FaceDetector:
 
     def detect(self, image: np.ndarray) -> list[tuple[int, int, int, int]]:
         """
-        Detect faces in an image.
+        Detect faces in an RGB image.
 
         Parameters
         ----------
         image : np.ndarray
-            BGR (OpenCV) or RGB numpy array (H×W×3).
+            RGB array (H×W×3), or grayscale / RGBA which is converted for you.
 
         Returns
         -------
         list of (top, right, bottom, left) tuples — face bounding boxes.
         """
-        rgb = self._ensure_rgb(image)
-        locations = face_recognition.face_locations(
+        rgb = self.to_rgb(image)
+        return face_recognition.face_locations(
             rgb, number_of_times_to_upsample=self.upscale, model=self.model
         )
-        return locations  # list of (top, right, bottom, left)
 
     def detect_from_path(self, image_path: str) -> tuple[np.ndarray, list]:
         """Load an image from disk and detect faces."""
@@ -73,40 +75,25 @@ class FaceDetector:
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _ensure_rgb(image: np.ndarray) -> np.ndarray:
-        """Convert BGR (OpenCV) to RGB if needed."""
+    def to_rgb(image: np.ndarray) -> np.ndarray:
+        """
+        Normalise an array to 3-channel RGB.
+
+        Grayscale and RGBA are converted. A 3-channel array is assumed to be
+        RGB already and returned untouched — channel order is not detectable
+        from pixels, so it is the caller's contract to honour. (The previous
+        version advertised BGR→RGB conversion in its docstring but its
+        3-channel branch was a bare `pass`, so it silently did nothing.)
+        """
         if image.ndim == 2:
-            image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
-        elif image.shape[2] == 4:
-            image = cv2.cvtColor(image, cv2.COLOR_BGRA2RGB)
-        elif image.shape[2] == 3:
-            # Heuristic: assume BGR if loaded by OpenCV
-            # face_recognition.load_image_file gives RGB — caller should pass
-            # the original when possible.
-            pass
-        return image
+            return cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+        if image.ndim == 3 and image.shape[2] == 4:
+            return cv2.cvtColor(image, cv2.COLOR_RGBA2RGB)
+        if image.ndim == 3 and image.shape[2] == 3:
+            return image
+        raise ValueError(f"Unsupported image shape for detection: {image.shape}")
 
     @staticmethod
-    def draw_boxes(
-        image: np.ndarray,
-        locations: list,
-        labels: list[str] | None = None,
-        color: tuple = (0, 255, 0),
-        thickness: int = 2,
-    ) -> np.ndarray:
-        """Draw bounding boxes on an image (BGR)."""
-        out = image.copy()
-        for idx, (top, right, bottom, left) in enumerate(locations):
-            cv2.rectangle(out, (left, top), (right, bottom), color, thickness)
-            if labels and idx < len(labels):
-                label = labels[idx]
-                cv2.putText(
-                    out,
-                    label,
-                    (left, top - 8),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.6,
-                    color,
-                    2,
-                )
-        return out
+    def bgr_to_rgb(image: np.ndarray) -> np.ndarray:
+        """Explicit BGR→RGB conversion for callers holding OpenCV output."""
+        return cv2.cvtColor(image, cv2.COLOR_BGR2RGB)

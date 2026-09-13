@@ -14,17 +14,69 @@ minimum distance (nearest-neighbour strategy). This naturally handles
 intra-class variation across enrolment images.
 """
 
-import numpy as np
+import json
 import logging
-from dataclasses import dataclass
+import math
+import os
+from dataclasses import dataclass, field
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
 # -------------------------------------------------------------------
-# Defaults (tuned on LFW-style benchmarks)
+# Defaults
 # -------------------------------------------------------------------
-DEFAULT_EUCLIDEAN_THRESHOLD = 0.60   # face_recognition default is 0.6
+# 0.60 is dlib's documented default. It is also, independently, what falls out
+# of fitting the threshold on LFW: `python -m ml.calibrate` selects 0.605 on
+# validation identities and scores 97.10% accuracy / 0.63% FAR / 5.17% FRR at
+# 0.60 on 462 held-out identities. See ml/results/threshold.json.
+#
+# The distance is measured on dlib's **raw** 128-d vectors, which are not unit
+# length (‖v‖ ≈ 1.42). Normalising first shrinks every distance by that factor
+# and makes 0.60 far too permissive — if you change the metric, re-fit the
+# threshold with it.
+DEFAULT_EUCLIDEAN_THRESHOLD = 0.60
 DEFAULT_COSINE_THRESHOLD    = 0.40
+
+# Optional override written by `python -m ml.calibrate`, so a threshold fitted
+# on your own population takes effect without editing code. Absent by default.
+_CALIBRATION_FILE = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "ml", "results", "threshold.json",
+)
+
+
+def calibrated_threshold(metric: str = "euclidean") -> float | None:
+    """
+    Return the fitted threshold for *metric*, or None if no calibration exists.
+
+    Reads the artefact `ml/calibrate.py` writes. Never raises: a missing or
+    malformed file simply means "no calibration", and the shipped default
+    stands.
+    """
+    try:
+        with open(_CALIBRATION_FILE, "r", encoding="utf-8") as f:
+            payload = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return None
+    if payload.get("metric") != metric:
+        return None
+    value = payload.get("fitted_threshold")
+    return float(value) if isinstance(value, (int, float)) else None
+
+
+def _json_safe(value: float) -> float | None:
+    """
+    JSON has no literal for infinity or NaN. Python's encoder emits the bare
+    tokens `Infinity`/`NaN` anyway, which `JSON.parse` in a browser rejects —
+    so a single unmatched face used to break the whole web response. Anything
+    non-finite becomes null, which every client can read.
+    """
+    if value is None:
+        return None
+    value = float(value)
+    return value if math.isfinite(value) else None
 
 
 @dataclass
@@ -36,29 +88,57 @@ class MatchResult:
     is_known: bool             # True if accepted, False if rejected
     threshold_used: float      # Threshold applied
     metric: str                # 'euclidean' or 'cosine'
-    scores: dict[str, float]   # {name: best_distance} for all candidates
+    scores: dict[str, float] = field(default_factory=dict)  # {name: best_distance}
 
     def to_dict(self) -> dict:
+        """JSON-serialisable view. Non-finite numbers are emitted as null."""
+        distance = _json_safe(self.distance)
         return {
             "name": self.name,
-            "distance": round(self.distance, 4),
-            "similarity": round(self.similarity, 4),
+            "distance": round(distance, 4) if distance is not None else None,
+            "similarity": round(_json_safe(self.similarity) or 0.0, 4),
             "is_known": self.is_known,
-            "confidence": round(self._confidence(), 4),
+            "confidence": round(self.confidence(), 4),
             "threshold_used": self.threshold_used,
             "metric": self.metric,
+            # True when there was simply nobody to compare against.
+            "no_candidates": not self.scores,
         }
 
-    def _confidence(self) -> float:
+    def confidence(self) -> float:
         """
-        Map distance to a [0, 1] confidence score.
-        Higher = more confident.
+        Map the match onto a [0, 1] confidence score, calibrated so that the
+        rejection threshold always sits at exactly 0.5:
+
+            distance 0          → 1.0   (identical embeddings)
+            distance threshold  → 0.5   (right on the accept/reject line)
+            distance 2·threshold→ 0.25
+
+        That makes the number readable without knowing the metric: above 50%
+        means accepted, below means rejected. (The previous exp(-2.5·d) curve
+        put the threshold at 0.22, so a solid match reported 66% and the
+        docstring's promise of ~0.5 at the threshold was simply untrue.)
         """
+        threshold = self.threshold_used
+
         if self.metric == "euclidean":
-            # Sigmoid-like decay: 0.0 distance → 1.0, threshold → ~0.5
-            return float(np.exp(-2.5 * self.distance))
-        else:
-            return self.similarity
+            if not math.isfinite(self.distance):
+                return 0.0
+            if threshold <= 0:
+                return 1.0 if self.distance <= 0 else 0.0
+            return float(0.5 ** (self.distance / threshold))
+
+        # Cosine: higher similarity is better, so the scale runs the other way.
+        similarity = self.similarity
+        if not math.isfinite(similarity):
+            return 0.0
+        if similarity >= threshold:
+            head = 1.0 - threshold
+            return float(0.5 + 0.5 * (similarity - threshold) / head) if head > 0 else 1.0
+        return float(0.5 * max(similarity, 0.0) / threshold) if threshold > 0 else 0.0
+
+    # Backwards-compatible alias for the old private name.
+    _confidence = confidence
 
 
 class FaceMatcher:
@@ -88,7 +168,7 @@ class FaceMatcher:
                 else DEFAULT_COSINE_THRESHOLD
             )
         else:
-            self.threshold = threshold
+            self.threshold = float(threshold)
 
     # ------------------------------------------------------------------
     # Public API
@@ -98,6 +178,7 @@ class FaceMatcher:
         self,
         query_embedding: np.ndarray,
         database: dict[str, list[np.ndarray]],
+        threshold: float | None = None,
     ) -> MatchResult:
         """
         Identify the person closest to *query_embedding*.
@@ -106,43 +187,59 @@ class FaceMatcher:
         ----------
         query_embedding : np.ndarray  shape (128,)
         database : {name: [embedding, ...]}
+        threshold : optional per-call override of the rejection threshold.
 
         Returns
         -------
         MatchResult
         """
+        active_threshold = self.threshold if threshold is None else float(threshold)
+
         if not database:
+            # Nothing enrolled: there is no distance to report, and inf is not
+            # representable in JSON. `no_candidates` tells the caller why.
             return MatchResult(
                 name="Unknown",
                 distance=float("inf"),
                 similarity=0.0,
                 is_known=False,
-                threshold_used=self.threshold,
+                threshold_used=active_threshold,
                 metric=self.metric,
                 scores={},
             )
 
         scores: dict[str, float] = {}
-
         for name, embeddings in database.items():
-            dists = [self._distance(query_embedding, e) for e in embeddings]
-            scores[name] = min(dists)  # nearest-neighbour per person
+            if not embeddings:
+                continue
+            scores[name] = min(self._distance(query_embedding, e) for e in embeddings)
+
+        if not scores:
+            return MatchResult(
+                name="Unknown",
+                distance=float("inf"),
+                similarity=0.0,
+                is_known=False,
+                threshold_used=active_threshold,
+                metric=self.metric,
+                scores={},
+            )
 
         best_name = min(scores, key=scores.__getitem__)
         best_dist = scores[best_name]
         best_sim  = self._cosine_similarity(query_embedding, database[best_name])
 
         if self.metric == "euclidean":
-            is_known = best_dist <= self.threshold
+            is_known = best_dist <= active_threshold
         else:
-            is_known = best_sim >= self.threshold
+            is_known = best_sim >= active_threshold
 
         return MatchResult(
             name=best_name if is_known else "Unknown",
             distance=best_dist,
             similarity=best_sim,
             is_known=is_known,
-            threshold_used=self.threshold,
+            threshold_used=active_threshold,
             metric=self.metric,
             scores=scores,
         )
@@ -151,9 +248,10 @@ class FaceMatcher:
         self,
         query_embeddings: list[np.ndarray],
         database: dict[str, list[np.ndarray]],
+        threshold: float | None = None,
     ) -> list[MatchResult]:
         """Identify multiple faces (e.g., from a group photo)."""
-        return [self.match(q, database) for q in query_embeddings]
+        return [self.match(q, database, threshold=threshold) for q in query_embeddings]
 
     # ------------------------------------------------------------------
     # Distance helpers
@@ -162,8 +260,7 @@ class FaceMatcher:
     def _distance(self, a: np.ndarray, b: np.ndarray) -> float:
         if self.metric == "euclidean":
             return float(np.linalg.norm(a - b))
-        else:
-            return 1.0 - self._dot_similarity(a, b)
+        return 1.0 - self._dot_similarity(a, b)
 
     @staticmethod
     def _dot_similarity(a: np.ndarray, b: np.ndarray) -> float:
@@ -176,5 +273,6 @@ class FaceMatcher:
         query: np.ndarray, enrolled_embeddings: list[np.ndarray]
     ) -> float:
         """Return the maximum cosine similarity across enrolled embeddings."""
-        sims = [FaceMatcher._dot_similarity(query, e) for e in enrolled_embeddings]
-        return max(sims)
+        if not enrolled_embeddings:
+            return 0.0
+        return max(FaceMatcher._dot_similarity(query, e) for e in enrolled_embeddings)

@@ -26,39 +26,53 @@ model card. The raw output is committed in [`ml/results/`](ml/results/).
 
 ## The interface
 
-A match, with its reasoning open. The bars show the distance to every enrolled
-person against the accept threshold — what matters is the gap between first and
-second place, which is the difference between a confident result and a coin
-toss:
+Three screens rather than one dashboard, because the three tasks are not
+simultaneous: you teach it someone, then you ask it who somebody is, and the
+directory is what connects the two.
 
-![Identifying a known face, with the candidate comparison expanded](docs/screenshots/identify-match.png)
+**First run.** Identification is meaningless against an empty directory, so the
+home screen says so and opens enrolment rather than presenting controls that
+cannot yet work.
 
-A face that clears detection but not the threshold. Amber and "Not recognised"
-are deliberately distinct from an error: the system worked, the person simply
-is not enrolled.
+![The empty state, directing you to add the first person](docs/screenshots/01-first-run.png)
 
-![A face that is not recognised](docs/screenshots/identify-unknown.png)
+**Adding someone** is a sequence — photographs, then a name. Enrolment decides
+how well everything downstream behaves, so it gets its own screen instead of
+sharing a panel with an unrelated task.
 
-The strictness control states the measured consequence of its own setting, so
-loosening it is a decision rather than an accident. At 0.79 more than a third of
-strangers would match:
+![Guided enrolment: photos, then a name](docs/screenshots/02-add-person.png)
 
-![The strictness slider warning that 37% of strangers will match](docs/screenshots/threshold-risk.png)
+Finishing offers the obvious next step rather than returning you to a form:
 
-Enrolment and identification also work straight from the camera:
+![Confirmation, offering to identify a face next](docs/screenshots/03-enrolled.png)
 
-![Capturing a face from the device camera](docs/screenshots/camera-capture.png)
+**The directory** is who the system knows.
 
-A photo containing more than one face is refused at enrolment rather than
-storing every face under one name, which would silently poison that identity:
+![The list of enrolled people](docs/screenshots/04-people.png)
 
-![A group photo being refused](docs/screenshots/group-photo-refused.png)
+**Identifying** shows a question, then an answer. Expanding *Why* gives the
+distance to every enrolled person against the accept threshold — the gap
+between first and second place is what separates a confident result from a
+coin toss.
 
-The empty state, and the same layout at phone width:
+![A match, with the candidate comparison expanded](docs/screenshots/05-identified.png)
 
-| First run | 390px |
+**A face it cannot name** is the one place the product could dead-end, so it
+offers to enrol that exact photograph instead.
+
+![An unknown face, offering to enrol it](docs/screenshots/06-unknown.png)
+
+**Strictness states its own consequences**, measured from 3,000 impostor pairs,
+so loosening it is a decision rather than an accident:
+
+![The strictness control warning that 37% of strangers would match](docs/screenshots/07-strictness.png)
+
+**Enrolment and identification also work from the camera**, and the same layout
+holds at phone width:
+
+| Camera | 390px |
 |---|---|
-| ![Empty state](docs/screenshots/empty-state.png) | ![Mobile layout](docs/screenshots/mobile.png) |
+| ![Capturing from the device camera](docs/screenshots/08-camera.png) | ![The mobile layout](docs/screenshots/09-mobile.png) |
 
 > Faces shown are Grace Hopper (US Navy photograph, public domain) and an image
 > from LFW, the dataset this project benchmarks against.

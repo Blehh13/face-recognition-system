@@ -674,3 +674,18 @@ ul { list-style: none; margin: 0; padding: 0; }
   .onboard { padding: 34px 22px; }
   .step { flex-direction: column; gap: 12px; padding: 20px; }
 }
+
+/*
+ * Shown only when the server reports FACEREC_DEMO. A demo that silently
+ * discards enrolments looks broken; one that says so looks deliberate.
+ */
+.demo-banner {
+  max-width: 760px;
+  margin: 0 auto 20px;
+  padding: 10px 14px;
+  border: 1px solid #f2d9a8;
+  background: #fdf6e8;
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  color: #7a5510;
+}

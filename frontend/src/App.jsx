@@ -19,6 +19,7 @@ export default function App() {
   const [people, setPeople] = useState([])
   const [loadingPeople, setLoadingPeople] = useState(true)
   const [online, setOnline] = useState(null)
+  const [demo, setDemo] = useState(false)
   const [toasts, setToasts] = useState([])
 
   /*
@@ -81,6 +82,17 @@ export default function App() {
   }, [])
 
   useEffect(() => { loadPeople() }, [loadPeople])
+
+  // A public demo empties its database on restart. Saying so is the difference
+  // between "this lost my data" and "this is a demo".
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/config')
+      .then(r => (r.ok ? r.json() : null))
+      .then(cfg => { if (!cancelled && cfg) setDemo(Boolean(cfg.demo)) })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [])
 
   const handleRemove = useCallback(async (name) => {
     try {
@@ -162,7 +174,15 @@ export default function App() {
         </div>
       </nav>
 
-      <main className="stage">{view}</main>
+      <main className="stage">
+        {demo && (
+          <p className="demo-banner">
+            Public demo — enrolled faces are erased whenever the server
+            restarts, and nothing is kept.
+          </p>
+        )}
+        {view}
+      </main>
 
       <div className="toasts" role="status" aria-live="polite">
         {toasts.map(t => (

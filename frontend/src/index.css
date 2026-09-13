@@ -828,3 +828,37 @@ input {
   color: var(--text-sub);
   margin-top: 8px;
 }
+
+/* ============================================================
+   Camera capture
+   ============================================================ */
+
+.camera {
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+}
+
+.camera-feed {
+  width: 100%;
+  max-height: 320px;
+  border-radius: var(--radius-sm);
+  background: #000;
+  display: block;
+  /* Mirrored so it reads like a mirror; the capture un-mirrors before upload. */
+  transform: scaleX(-1);
+}
+
+.camera-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 10px;
+}
+
+.camera-error {
+  font-size: 13px;
+  color: var(--danger);
+  margin-bottom: 6px;
+}

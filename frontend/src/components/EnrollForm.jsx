@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import CameraCapture from './CameraCapture.jsx'
 
 export default function EnrollForm({ onEnrolled, onError }) {
   const [name, setName] = useState('')
@@ -6,6 +7,7 @@ export default function EnrollForm({ onEnrolled, onError }) {
   const [previews, setPreviews] = useState([])
   const [dragging, setDragging] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [cameraOpen, setCameraOpen] = useState(false)
   const inputRef = useRef(null)
 
   useEffect(() => {
@@ -98,6 +100,14 @@ export default function EnrollForm({ onEnrolled, onError }) {
 
         <div className="field">
           <label className="field-label" htmlFor="enroll-files">Photos</label>
+          {cameraOpen ? (
+            <CameraCapture
+              disabled={submitting}
+              onCapture={f => { setCameraOpen(false); setFiles([f]) }}
+              onError={onError}
+              onClose={() => setCameraOpen(false)}
+            />
+          ) : (
           <button
             type="button"
             id="enroll-files"
@@ -126,6 +136,18 @@ export default function EnrollForm({ onEnrolled, onError }) {
               </>
             )}
           </button>
+          )}
+
+          {!cameraOpen && (
+            <button
+              type="button"
+              className="btn-link"
+              onClick={() => setCameraOpen(true)}
+              disabled={submitting}
+            >
+              Use camera instead
+            </button>
+          )}
 
           <input
             ref={inputRef}

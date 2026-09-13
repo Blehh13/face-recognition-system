@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import CameraCapture from './CameraCapture.jsx'
 
 /*
  * Measured false-accept / false-reject rates for the dlib engine, from 3,000
@@ -59,6 +60,7 @@ export default function IdentifyPanel({ onIdentified, onError }) {
   const [dragging, setDragging] = useState(false)
   const [running, setRunning] = useState(false)
   const [inlineError, setInlineError] = useState(null)
+  const [cameraOpen, setCameraOpen] = useState(false)
   const inputRef = useRef(null)
   const risk = describeRisk(threshold)
 
@@ -128,6 +130,14 @@ export default function IdentifyPanel({ onIdentified, onError }) {
 
       <div className="field">
         <label className="field-label" htmlFor="identify-file">Photo</label>
+        {cameraOpen ? (
+          <CameraCapture
+            disabled={running}
+            onCapture={file => { setCameraOpen(false); acceptFile(file) }}
+            onError={setInlineError}
+            onClose={() => setCameraOpen(false)}
+          />
+        ) : (
         <button
           type="button"
           id="identify-file"
@@ -156,6 +166,18 @@ export default function IdentifyPanel({ onIdentified, onError }) {
             </>
           )}
         </button>
+        )}
+
+        {!cameraOpen && (
+          <button
+            type="button"
+            className="btn-link"
+            onClick={() => { setInlineError(null); setCameraOpen(true) }}
+            disabled={running}
+          >
+            Use camera instead
+          </button>
+        )}
 
         <input
           ref={inputRef}

@@ -1,215 +1,192 @@
 /* ============================================================
-   Face Recognition System — base stylesheet
+   Face ID — application shell
    Vanilla CSS. No frameworks, no preprocessor.
    ============================================================ */
 
 :root {
-  --bg:        #f7f8fa;
+  --bg:        #f6f7f9;
   --surface:   #ffffff;
-  --border:    #e2e4e9;
-  --text:      #111318;
+  --border:    #e4e6eb;
+  --text:      #0f1115;
   --text-sub:  #6b7280;
-  --accent:    #2563eb;
+  --accent:    #2f6df6;
+  --accent-dk: #2457cc;
+  --accent-wash:#eef4ff;
   --danger:    #dc2626;
-  --success:   #16a34a;
+  --success:   #12a150;
   --warning:   #d97706;
-  --muted:     #f3f4f6;
+  --muted:     #f2f3f6;
 
-  --accent-dark: #2159d4;   /* --accent, 10% darker */
-  --accent-wash: #eff6ff;   /* drag-over fill */
-  --track:       #d1d5db;   /* slider track */
-  --radius:      8px;
-  --radius-sm:   6px;
+  --rail:      #12141a;
+  --rail-sub:  #9aa1ae;
+  --rail-line: #232733;
+
+  --r-sm: 8px;
+  --r:    12px;
+  --r-lg: 16px;
+
+  --shadow: 0 1px 2px rgba(15, 17, 21, 0.04), 0 8px 24px rgba(15, 17, 21, 0.06);
 }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+*, *::before, *::after { box-sizing: border-box; }
 
-html {
-  font-size: 14px;
-}
+html { font-size: 15px; }
 
 body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.5;
+  font-size: 15px;
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-h1,
-h2,
-h3 {
-  margin: 0;
-  font-weight: 600;
-  line-height: 1.3;
-}
-
-p {
-  margin: 0;
-}
-
-img {
-  max-width: 100%;
-  display: block;
-}
-
-button,
-input {
-  font: inherit;
-  color: inherit;
-}
+h1, h2, h3 { margin: 0; line-height: 1.2; letter-spacing: -0.015em; }
+p { margin: 0; }
+img { max-width: 100%; display: block; }
+button, input { font: inherit; color: inherit; }
+ul { list-style: none; margin: 0; padding: 0; }
 
 /* ============================================================
-   Layout
+   Shell — a fixed rail beside a scrolling stage.
+   The rail is what makes this read as an application with
+   places in it, rather than one long page of controls.
    ============================================================ */
 
-.app {
+.shell {
   min-height: 100vh;
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
 }
 
-.header {
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  padding: 14px 24px;
+.rail {
+  background: var(--rail);
+  color: #fff;
+  padding: 22px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.rail-brand {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 10px;
+  padding: 0 8px;
 }
 
-.header-title {
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.header-sub {
-  font-size: 12px;
-  color: var(--text-sub);
-  margin-top: 1px;
-}
-
-.header-status {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-sub);
-  white-space: nowrap;
-}
-
-.status-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--text-sub);
+.rail-mark {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: var(--accent);
+  position: relative;
   flex-shrink: 0;
 }
 
-.status-dot.is-online {
-  background: var(--success);
+/* A face-in-frame glyph, drawn rather than shipped as an asset. */
+.rail-mark::after {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border: 2px solid #fff;
+  border-radius: 50% 50% 45% 45%;
 }
 
-.status-dot.is-offline {
-  background: var(--danger);
-}
+.rail-brand-text { font-weight: 600; letter-spacing: -0.01em; }
 
-.layout {
-  width: 100%;
-  max-width: 1240px;
-  margin: 0 auto;
-  padding-block: 24px;
-  padding-left: 24px;
-  padding-right: 24px;
-  display: grid;
-  grid-template-columns: 320px minmax(0, 1fr);
-  gap: 20px;
-  align-items: start;
-}
+.rail-nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
 
-.column {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  min-width: 0;
-}
-
-/* ============================================================
-   Card
-   ============================================================ */
-
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px;
-}
-
-.card-head {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.card-title {
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.card-count {
-  margin-left: auto;
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--text-sub);
-  white-space: nowrap;
-}
-
-/* ============================================================
-   Forms
-   ============================================================ */
-
-.field {
-  margin-bottom: 14px;
-}
-
-.field-label {
+.rail-link {
   display: block;
+  position: relative;
+  padding: 11px 12px;
+  border-radius: var(--r-sm);
+  text-decoration: none;
+  color: var(--rail-sub);
+}
+
+.rail-link:hover { background: rgba(255, 255, 255, 0.05); color: #fff; }
+
+.rail-link.is-active { background: rgba(255, 255, 255, 0.08); color: #fff; }
+
+.rail-link.is-active::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 12px; bottom: 12px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--accent);
+}
+
+.rail-label { display: block; font-size: 14px; font-weight: 500; }
+.rail-hint  { display: block; font-size: 12px; color: var(--rail-sub); margin-top: 1px; }
+.rail-link.is-active .rail-hint { color: #b9c0cc; }
+
+.rail-count {
+  position: absolute;
+  right: 12px; top: 12px;
+  min-width: 22px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
   font-size: 12px;
-  font-weight: 500;
-  color: var(--text-sub);
-  margin-bottom: 6px;
+  font-weight: 600;
+  text-align: center;
+  color: #fff;
 }
 
-.input {
-  width: 100%;
-  background: var(--muted);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 10px 12px;
-  outline: none;
+.rail-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 10px 0;
+  font-size: 12px;
+  color: var(--rail-sub);
+  border-top: 1px solid var(--rail-line);
 }
 
-.input::placeholder {
-  color: var(--text-sub);
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--rail-sub); flex-shrink: 0; }
+.dot.is-online  { background: var(--success); }
+.dot.is-offline { background: var(--danger); }
+
+/* ============================================================
+   Stage / view
+   ============================================================ */
+
+.stage { padding: 40px 44px 72px; }
+
+.view { max-width: 760px; margin: 0 auto; }
+
+.view-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
 }
 
-.input:focus {
-  border-color: var(--accent);
+.view-title { font-size: 30px; font-weight: 650; }
+.view-sub   { font-size: 14px; color: var(--text-sub); margin-top: 5px; }
+.view-actions { margin-left: auto; display: flex; gap: 10px; flex-wrap: wrap; }
+
+.muted { color: var(--text-sub); }
+
+.note {
+  background: var(--accent-wash);
+  border: 1px solid #d7e3ff;
+  border-radius: var(--r);
+  padding: 14px 16px;
+  font-size: 14px;
+  margin-bottom: 20px;
 }
 
-.input:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
+.note .btn-link { margin-top: 0; }
 
 /* ============================================================
    Buttons
@@ -219,549 +196,372 @@ input {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 9px;
   background: var(--accent);
-  color: #ffffff;
+  color: #fff;
   border: 1px solid var(--accent);
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-sm);
   padding: 10px 18px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
 }
 
-.btn:hover:not(:disabled) {
-  background: var(--accent-dark);
-  border-color: var(--accent-dark);
-}
+.btn:hover:not(:disabled) { background: var(--accent-dk); border-color: var(--accent-dk); }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
-.btn:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
+.btn-lg { padding: 13px 26px; font-size: 15px; border-radius: var(--r); }
 
-.btn:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-
-.btn-block {
-  width: 100%;
-}
-
-.btn-danger {
+.btn-ghost {
   background: var(--surface);
-  color: var(--danger);
-  border-color: var(--danger);
+  color: var(--text);
+  border-color: var(--border);
 }
+.btn-ghost:hover:not(:disabled) { background: var(--muted); border-color: #d5d8df; color: var(--text); }
 
-.btn-danger:hover:not(:disabled) {
-  background: var(--danger);
-  border-color: var(--danger);
-  color: #ffffff;
-}
-
-.btn-text {
+.btn-link {
   background: none;
   border: none;
   padding: 0;
-  font-size: 12px;
+  margin-top: 10px;
+  font-size: 13px;
   font-weight: 500;
-  color: var(--danger);
+  color: var(--accent);
   cursor: pointer;
 }
+.btn-link:hover:not(:disabled) { text-decoration: underline; }
+.btn-link:disabled { color: var(--text-sub); cursor: not-allowed; }
 
-.btn-text:hover:not(:disabled) {
-  text-decoration: underline;
+.btn-danger-sm {
+  background: var(--danger);
+  color: #fff;
+  border: 1px solid var(--danger);
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
 }
+.btn-danger-sm:disabled { opacity: 0.6; cursor: not-allowed; }
 
-.btn-text:disabled {
-  color: var(--text-sub);
-  cursor: not-allowed;
-}
-
-/*
- * The spinner is the one moving element in the interface: it is the only way
- * to show that a request is still in flight, so it earns its motion.
- */
 .spinner {
-  width: 13px;
-  height: 13px;
+  width: 14px; height: 14px;
   border: 2px solid rgba(255, 255, 255, 0.45);
-  border-top-color: #ffffff;
+  border-top-color: #fff;
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
   flex-shrink: 0;
 }
-
-.spinner-dark {
-  border-color: var(--border);
-  border-top-color: var(--text-sub);
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .spinner {
-    animation-duration: 2.4s;
-  }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 2.4s; } }
 
 /* ============================================================
-   Upload zone
+   Onboarding / confirmation moments
    ============================================================ */
 
-.upload {
-  width: 100%;
-  display: block;
-  background: var(--muted);
-  border: 2px dashed var(--border);
-  border-radius: var(--radius);
-  padding: 22px 16px;
+.onboard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow);
+  padding: 48px 40px;
   text-align: center;
-  cursor: pointer;
+  margin-top: 32px;
 }
 
-.upload:hover,
-.upload:focus-visible,
-.upload.is-dragging {
+.onboard-step {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+.onboard-step.is-good { color: var(--success); }
+
+.onboard-title { font-size: 26px; font-weight: 650; }
+.onboard-body  { color: var(--text-sub); margin-top: 12px; max-width: 44ch; margin-inline: auto; }
+.onboard-warn  { color: var(--warning); font-size: 13px; margin-top: 10px; }
+.onboard-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 26px; }
+.onboard > .btn { margin-top: 26px; }
+.onboard-actions .btn { margin-top: 0; }
+
+/* ============================================================
+   Steps (guided enrolment)
+   ============================================================ */
+
+.flow { display: flex; flex-direction: column; gap: 18px; }
+
+.step {
+  display: flex;
+  gap: 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow);
+  padding: 24px;
+}
+
+/* Dim a step whose prerequisite is not met, without disabling it. */
+.step.is-waiting { opacity: 0.55; }
+
+.step-mark {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--rail);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.step-body { flex: 1; min-width: 0; }
+.step-title { font-size: 17px; font-weight: 600; }
+.step-help  { font-size: 13px; color: var(--text-sub); margin-top: 5px; margin-bottom: 16px; }
+
+.flow-actions { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-top: 6px; }
+.flow-actions .btn-link { margin-top: 0; }
+
+/* ============================================================
+   Inputs / drop zones
+   ============================================================ */
+
+.field {
+  width: 100%;
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 11px 14px;
+  outline: none;
+}
+.field::placeholder { color: var(--text-sub); }
+.field:focus { border-color: var(--accent); background: var(--surface); }
+.field:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.drop {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  background: var(--muted);
+  border: 2px dashed #d3d7e0;
+  border-radius: var(--r);
+  padding: 26px 18px;
+  cursor: pointer;
+  text-align: center;
+}
+.drop:hover:not(:disabled), .drop.is-dragging, .drop:focus-visible {
   border-color: var(--accent);
   background: var(--accent-wash);
   outline: none;
 }
-
-.upload:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.upload:disabled:hover {
-  border-color: var(--border);
-  background: var(--muted);
-}
-
-.upload-arrow {
-  font-size: 18px;
-  line-height: 1;
-  color: var(--text-sub);
-  margin-bottom: 6px;
-}
-
-.upload-main {
-  font-size: 13px;
-  font-weight: 500;
-  word-break: break-word;
-}
-
-.upload-hint {
-  font-size: 12px;
-  color: var(--text-sub);
-  margin-top: 3px;
-}
-
-.upload input[type="file"] {
-  display: none;
-}
+.drop:disabled { opacity: 0.6; cursor: not-allowed; }
+.drop-lg { padding: 52px 18px; }
+.drop-title { font-size: 15px; font-weight: 600; word-break: break-word; }
+.drop-sub   { font-size: 13px; color: var(--text-sub); }
 
 .preview {
   width: 100%;
-  max-height: 300px;
+  max-height: 340px;
   object-fit: contain;
-  border-radius: var(--radius);
+  border-radius: var(--r);
   border: 1px solid var(--border);
   background: var(--muted);
-  margin-top: 12px;
+  margin-top: 16px;
 }
 
-.thumbs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
-}
+.shots { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
 
-.thumb {
-  width: 56px;
-  height: 56px;
+.shot { position: relative; width: 84px; height: 84px; }
+.shot img {
+  width: 100%; height: 100%;
   object-fit: cover;
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-sm);
   border: 1px solid var(--border);
 }
+.shot-remove {
+  position: absolute;
+  top: -7px; right: -7px;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-sub);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+.shot-remove:hover:not(:disabled) { color: var(--danger); border-color: var(--danger); }
 
 /* ============================================================
-   Person list
+   People directory
    ============================================================ */
 
-.person-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.people {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
 }
 
-.person-row {
-  height: 40px;
+.person {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 0 8px;
-  margin: 0 -8px;
-  border-radius: var(--radius-sm);
+  gap: 14px;
+  padding: 14px 20px;
+  min-height: 62px;
 }
+.person + .person { border-top: 1px solid var(--border); }
+.person:hover { background: var(--muted); }
 
-.person-row:hover {
-  background: var(--muted);
-}
-
-.person-row + .person-row {
-  border-top: 1px solid var(--border);
+.person-initial {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: var(--accent-wash);
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 650;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
 }
 
 .person-name {
   flex: 1;
   min-width: 0;
+  font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.person-row .btn-text {
+.person-remove {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--danger);
+  cursor: pointer;
   visibility: hidden;
 }
+.person:hover .person-remove,
+.person:focus-within .person-remove { visibility: visible; }
+.person-remove:hover { text-decoration: underline; }
+.person-remove:disabled { color: var(--text-sub); cursor: not-allowed; }
 
-.person-row:hover .btn-text,
-.person-row:focus-within .btn-text,
-.person-row .btn-text.is-busy {
-  visibility: visible;
-}
-
-/* ============================================================
-   Empty states
-   ============================================================ */
-
-.empty {
-  background: var(--muted);
-  border-radius: var(--radius-sm);
-  padding: 20px 16px;
-  text-align: center;
-  font-size: 13px;
-  color: var(--text-sub);
-}
+.person-confirm { display: flex; align-items: center; gap: 10px; }
+.person-confirm-text { font-size: 13px; color: var(--text-sub); }
+.person-confirm .btn-link { margin-top: 0; }
 
 /* ============================================================
-   Threshold slider
+   Answer (identification result)
    ============================================================ */
 
-.threshold {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.threshold-value {
-  font-size: 13px;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  min-width: 30px;
-}
-
-.range {
-  flex: 1;
-  min-width: 0;
-  height: 16px;
-  background: none;
-  cursor: pointer;
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-.range::-webkit-slider-runnable-track {
-  height: 4px;
-  border-radius: 2px;
-  background: var(--track);
-}
-
-.range::-webkit-slider-thumb {
-  width: 14px;
-  height: 14px;
-  margin-top: -5px;
-  border: none;
-  border-radius: 50%;
-  background: var(--accent);
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-.range::-moz-range-track {
-  height: 4px;
-  border-radius: 2px;
-  background: var(--track);
-}
-
-.range::-moz-range-thumb {
-  width: 14px;
-  height: 14px;
-  border: none;
-  border-radius: 50%;
-  background: var(--accent);
-}
-
-.range:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 4px;
-}
-
-.range:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-
-/*
- * States the consequence of the current threshold in plain words. A bare
- * number hides the fact that 0.79 accepts ~40% of strangers against 0.6% at
- * 0.60, which is not a difference anyone should have to discover by being
- * misidentified.
- */
-.risk {
-  font-size: 12px;
-  margin-top: 6px;
-  color: var(--text-sub);
-}
-
-.risk-warn {
-  color: var(--warning);
-  font-weight: 500;
-}
-
-.risk-danger {
-  color: var(--danger);
-  font-weight: 500;
-}
-
-.btn-link {
-  display: inline-block;
-  background: none;
-  border: none;
-  padding: 0;
-  margin-top: 6px;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--accent);
-  cursor: pointer;
-}
-
-.btn-link:hover:not(:disabled) {
-  text-decoration: underline;
-}
-
-.btn-link:disabled {
-  color: var(--text-sub);
-  cursor: not-allowed;
-}
-
-/* ============================================================
-   Results
-   ============================================================ */
-
-.result-image {
+.answer-image {
   width: 100%;
-  max-height: 420px;
+  max-height: 460px;
   object-fit: contain;
-  border-radius: var(--radius);
+  border-radius: var(--r);
   border: 1px solid var(--border);
   background: var(--muted);
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
-.result {
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--success);
-  border-radius: var(--radius-sm);
-  padding: 12px 14px;
-}
-
-.result.is-unknown {
-  border-left-color: var(--warning);
-}
-
-.result + .result {
-  margin-top: 10px;
-}
-
-.result-name {
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.result-meta {
-  font-size: 12px;
-  color: var(--text-sub);
-  margin-top: 3px;
-}
-
-/* ============================================================
-   Toasts
-   ============================================================ */
-
-.toasts {
-  position: fixed;
-  /* Clears the header band, so a toast never hides the connection status. */
-  top: 68px;
-  right: 16px;
-  z-index: 50;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  width: 320px;
-  max-width: calc(100vw - 32px);
-}
-
-.toast {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
+.answer {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-left: 3px solid var(--accent);
-  border-radius: var(--radius-sm);
-  padding: 12px 14px;
+  border-left: 4px solid var(--success);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+  padding: 20px 22px;
+}
+.answer + .answer { margin-top: 14px; }
+.answer.is-unknown { border-left-color: var(--warning); }
+
+.answer-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.answer-name { font-size: 20px; font-weight: 650; }
+.answer-confidence { margin-left: auto; font-size: 13px; color: var(--text-sub); white-space: nowrap; }
+.answer-meta { font-size: 13px; color: var(--text-sub); margin-top: 4px; }
+
+.answer-spoof {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--warning);
+  background: var(--muted);
+  border-radius: var(--r-sm);
   font-size: 13px;
-  opacity: 1;
-  transition: opacity 0.15s;
 }
 
-.toast.is-leaving {
-  opacity: 0;
-}
-
-.toast.is-success {
-  border-left-color: var(--success);
-}
-
-.toast.is-error {
-  border-left-color: var(--danger);
-}
-
-.toast.is-warning {
-  border-left-color: var(--warning);
-}
-
-.toast-text {
-  flex: 1;
-  min-width: 0;
-}
-
-.toast-close {
-  flex-shrink: 0;
-  background: none;
-  border: none;
-  padding: 0;
-  font-size: 15px;
-  line-height: 1;
-  color: var(--text-sub);
-  cursor: pointer;
-}
-
-.toast-close:hover {
-  color: var(--text);
-}
-
-/* ============================================================
-   Inline messages
-   ============================================================ */
-
-.error-text {
-  font-size: 12px;
-  color: var(--danger);
-  margin-top: 10px;
-}
-
-/* ============================================================
-   Responsive
-   ============================================================ */
-
-@media (max-width: 880px) {
-  .layout {
-    grid-template-columns: minmax(0, 1fr);
-    padding-left: 16px;
-    padding-right: 16px;
-  }
-
-  .header {
-    padding: 14px 16px;
-  }
-}
-
-/*
- * A 320px panel pinned top-right covers the header on a phone, so below this
- * width the toasts move to the bottom of the screen and span it instead.
- */
-@media (max-width: 560px) {
-  .toasts {
-    top: auto;
-    bottom: 16px;
-    left: 16px;
-    right: 16px;
-    width: auto;
-    max-width: none;
-  }
-}
-
-@media (max-width: 480px) {
-  .header {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .header-status {
-    margin-left: 0;
-    width: 100%;
-  }
-}
-
-/* ============================================================
-   Match explanation
-   ============================================================ */
-
-.why {
-  margin-top: 10px;
+.answer-next {
+  margin-top: 18px;
+  padding-top: 16px;
   border-top: 1px solid var(--border);
-  padding-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 14px;
+  color: var(--text-sub);
 }
 
-.why-summary {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--accent);
+/* ============================================================
+   Strictness tuning (collapsed by default: a default that works
+   should not look like a decision waiting to be made)
+   ============================================================ */
+
+.tuning {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 14px 18px;
+  margin-top: 20px;
+}
+.tuning-summary { font-size: 13px; font-weight: 500; color: var(--text-sub); cursor: pointer; list-style: none; }
+.tuning-summary::-webkit-details-marker { display: none; }
+.tuning-summary::before { content: "+ "; font-weight: 600; color: var(--accent); }
+.tuning[open] .tuning-summary::before { content: "- "; }
+.tuning-body { margin-top: 14px; }
+.tuning-body .btn-link { margin-top: 6px; }
+
+.range {
+  width: 100%;
+  height: 18px;
+  background: none;
   cursor: pointer;
-  list-style: none;
+  -webkit-appearance: none;
+  appearance: none;
 }
-
-.why-summary::-webkit-details-marker {
-  display: none;
+.range::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: #d5d8df; }
+.range::-webkit-slider-thumb {
+  width: 16px; height: 16px; margin-top: -6px;
+  border: none; border-radius: 50%; background: var(--accent);
+  -webkit-appearance: none; appearance: none;
 }
+.range::-moz-range-track { height: 4px; border-radius: 2px; background: #d5d8df; }
+.range::-moz-range-thumb { width: 16px; height: 16px; border: none; border-radius: 50%; background: var(--accent); }
+.range:disabled { opacity: 0.55; cursor: not-allowed; }
 
-.why-summary::before {
-  content: "+ ";
-  font-weight: 600;
-}
+.risk { font-size: 13px; color: var(--text-sub); margin-top: 8px; }
+.risk-warn   { color: var(--warning); font-weight: 500; }
+.risk-danger { color: var(--danger);  font-weight: 500; }
 
-.why[open] .why-summary::before {
-  content: "- ";
-}
+/* ============================================================
+   Reasoning ("why this result")
+   ============================================================ */
 
-.why-body {
-  margin-top: 10px;
-}
+.why { margin-top: 16px; border-top: 1px solid var(--border); padding-top: 12px; }
+.why-summary { font-size: 13px; font-weight: 500; color: var(--accent); cursor: pointer; list-style: none; }
+.why-summary::-webkit-details-marker { display: none; }
+.why-summary::before { content: "+ "; font-weight: 600; }
+.why[open] .why-summary::before { content: "- "; }
+.why-body { margin-top: 12px; }
 
-.why-scale {
-  position: relative;
-  height: 14px;
-  margin-bottom: 2px;
-}
-
+.why-scale { position: relative; height: 16px; }
 .why-tick-label {
   position: absolute;
   transform: translateX(-50%);
@@ -770,110 +570,107 @@ input {
   white-space: nowrap;
 }
 
-.why-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  height: 24px;
-  font-size: 12px;
-}
-
-.why-name {
-  width: 34%;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--text-sub);
-}
-
-.why-bar {
-  position: relative;
-  flex: 1;
-  height: 10px;
-  background: var(--muted);
-  border-radius: 5px;
-  overflow: hidden;
-}
-
-.why-fill {
-  display: block;
-  height: 100%;
-  background: var(--text-sub);
-  border-radius: 5px;
-}
-
-.why-fill.is-accepted {
-  background: var(--success);
-}
-
-/* The accept/reject line, drawn over every bar at the same position. */
-.why-threshold {
-  position: absolute;
-  top: -2px;
-  bottom: -2px;
-  width: 2px;
-  background: var(--accent);
-}
-
-.why-distance {
-  width: 44px;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-  color: var(--text);
-}
-
-.why-note {
-  font-size: 11px;
-  color: var(--text-sub);
-  margin-top: 8px;
-}
+.why-row { display: flex; align-items: center; gap: 12px; height: 26px; font-size: 13px; }
+.why-name { width: 34%; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-sub); }
+.why-bar { position: relative; flex: 1; height: 10px; background: var(--muted); border-radius: 5px; overflow: hidden; }
+.why-fill { display: block; height: 100%; background: #b6bcc8; border-radius: 5px; }
+.why-fill.is-accepted { background: var(--success); }
+.why-threshold { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--accent); }
+.why-distance { width: 46px; text-align: right; font-variant-numeric: tabular-nums; }
+.why-note { font-size: 11px; color: var(--text-sub); margin-top: 10px; }
 
 /* ============================================================
-   Camera capture
+   Camera
    ============================================================ */
 
 .camera {
   background: var(--muted);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 12px;
+  border-radius: var(--r);
+  padding: 14px;
 }
-
 .camera-feed {
   width: 100%;
-  max-height: 320px;
-  border-radius: var(--radius-sm);
+  max-height: 360px;
+  border-radius: var(--r-sm);
   background: #000;
   display: block;
-  /* Mirrored so it reads like a mirror; the capture un-mirrors before upload. */
-  transform: scaleX(-1);
+  transform: scaleX(-1);   /* mirror the preview; capture un-mirrors */
 }
+.camera-actions { display: flex; align-items: center; gap: 16px; margin-top: 12px; }
+.camera-actions .btn-link { margin-top: 0; }
+.camera-error { font-size: 14px; color: var(--danger); margin-bottom: 8px; }
 
-.camera-actions {
+/* ============================================================
+   Toasts
+   ============================================================ */
+
+.toasts {
+  position: fixed;
+  top: 20px; right: 20px;
+  z-index: 50;
   display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-top: 10px;
+  flex-direction: column;
+  gap: 10px;
+  width: 340px;
+  max-width: calc(100vw - 40px);
 }
 
-.camera-error {
-  font-size: 13px;
-  color: var(--danger);
-  margin-bottom: 6px;
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--r-sm);
+  box-shadow: var(--shadow);
+  padding: 13px 15px;
+  font-size: 14px;
+  opacity: 1;
+  transition: opacity 0.15s;
 }
+.toast.is-leaving { opacity: 0; }
+.toast.is-success { border-left-color: var(--success); }
+.toast.is-error   { border-left-color: var(--danger); }
+.toast.is-warning { border-left-color: var(--warning); }
+.toast-text { flex: 1; min-width: 0; }
+.toast-close {
+  flex-shrink: 0;
+  background: none; border: none; padding: 0;
+  font-size: 16px; line-height: 1;
+  color: var(--text-sub); cursor: pointer;
+}
+.toast-close:hover { color: var(--text); }
 
-/*
- * Liveness caution. Worded and styled as a caution rather than a rejection
- * because the detector is advisory: see src/liveness.py for why a single
- * MiniFASNet score is not strong enough to refuse someone on.
- */
-.spoof-warning {
-  margin-top: 8px;
-  padding: 8px 10px;
-  border-left: 3px solid var(--warning);
-  background: var(--muted);
-  border-radius: var(--radius-sm);
-  font-size: 12px;
-  color: var(--text);
+/* ============================================================
+   Responsive — the rail becomes a top bar
+   ============================================================ */
+
+@media (max-width: 860px) {
+  .shell { grid-template-columns: minmax(0, 1fr); }
+
+  .rail {
+    position: static;
+    height: auto;
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    overflow-x: auto;
+  }
+
+  .rail-brand { display: none; }
+  .rail-nav { flex-direction: row; gap: 6px; flex: 1; }
+  .rail-link { padding: 8px 12px; white-space: nowrap; }
+  .rail-link.is-active::before { display: none; }
+  .rail-hint { display: none; }
+  .rail-count { position: static; margin-left: 8px; display: inline-block; }
+  .rail-foot { border: none; padding: 0; white-space: nowrap; }
+
+  .stage { padding: 24px 16px 56px; }
+  .view-title { font-size: 24px; }
+  .view-actions { margin-left: 0; width: 100%; }
+  .onboard { padding: 34px 22px; }
+  .step { flex-direction: column; gap: 12px; padding: 20px; }
 }

@@ -1,0 +1,150 @@
+{
+  "source": "Wikimedia Commons",
+  "licence_policy": "public domain only",
+  "files": [
+    {
+      "file": "enrolled/Grace_Hopper/Grace_Hopper_1.jpg",
+      "person": "Grace_Hopper",
+      "commons_title": "File:Commodore Grace M. Hopper, USN (covered).jpg",
+      "licence": "Public domain",
+      "credit": "James S. Davis",
+      "source": "https://commons.wikimedia.org/wiki/File:Commodore_Grace_M._Hopper,_USN_(covered).jpg"
+    },
+    {
+      "file": "enrolled/Grace_Hopper/Grace_Hopper_2.jpg",
+      "person": "Grace_Hopper",
+      "commons_title": "File:Grace Hopper.jpg",
+      "licence": "Public domain",
+      "credit": "James S. Davis",
+      "source": "https://commons.wikimedia.org/wiki/File:Grace_Hopper.jpg"
+    },
+    {
+      "file": "probe/Grace_Hopper_1.jpg",
+      "person": "Grace_Hopper",
+      "commons_title": "File:Grace Hopper in the 1940s.webp",
+      "licence": "Public domain",
+      "credit": "AnonymousUnknown author",
+      "source": "https://commons.wikimedia.org/wiki/File:Grace_Hopper_in_the_1940s.webp"
+    },
+    {
+      "file": "enrolled/Katherine_Johnson/Katherine_Johnson_1.jpg",
+      "person": "Katherine_Johnson",
+      "commons_title": "File:Katherine Johnson 1983.jpg",
+      "licence": "Public domain",
+      "credit": "NASA",
+      "source": "https://commons.wikimedia.org/wiki/File:Katherine_Johnson_1983.jpg"
+    },
+    {
+      "file": "enrolled/Katherine_Johnson/Katherine_Johnson_2.jpg",
+      "person": "Katherine_Johnson",
+      "commons_title": "File:Katherine Johnson 2.jpg",
+      "licence": "Public domain",
+      "credit": "NASA on The Commons",
+      "source": "https://commons.wikimedia.org/wiki/File:Katherine_Johnson_2.jpg"
+    },
+    {
+      "file": "probe/Katherine_Johnson_1.jpg",
+      "person": "Katherine_Johnson",
+      "commons_title": "File:Katherine Johnson color.png",
+      "licence": "Public domain",
+      "credit": "NASA",
+      "source": "https://commons.wikimedia.org/wiki/File:Katherine_Johnson_color.png"
+    },
+    {
+      "file": "enrolled/Sally_Ride/Sally_Ride_1.jpg",
+      "person": "Sally_Ride",
+      "commons_title": "File:2022 Dr. Sally Ride Womens Quarter.jpg",
+      "licence": "Public domain",
+      "credit": "Phebe Hemphill, Elana Hagler",
+      "source": "https://commons.wikimedia.org/wiki/File:2022_Dr._Sally_Ride_Womens_Quarter.jpg"
+    },
+    {
+      "file": "enrolled/Sally_Ride/Sally_Ride_2.jpg",
+      "person": "Sally_Ride",
+      "commons_title": "File:Sally Ride (1984).jpg",
+      "licence": "Public domain",
+      "credit": "NASA; retouched by Coffeeandcrumbs",
+      "source": "https://commons.wikimedia.org/wiki/File:Sally_Ride_(1984).jpg"
+    },
+    {
+      "file": "probe/Sally_Ride_1.jpg",
+      "person": "Sally_Ride",
+      "commons_title": "File:Sally Ride in 1984.jpg",
+      "licence": "Public domain",
+      "credit": "NASA; retouched by Adam Cuerden (edited to remove dust and scratches)",
+      "source": "https://commons.wikimedia.org/wiki/File:Sally_Ride_in_1984.jpg"
+    },
+    {
+      "file": "enrolled/Mae_Jemison/Mae_Jemison_1.jpg",
+      "person": "Mae_Jemison",
+      "commons_title": "File:Mae-jemison.jpg",
+      "licence": "Public domain",
+      "credit": "National Aeronautics and Space Administration",
+      "source": "https://commons.wikimedia.org/wiki/File:Mae-jemison.jpg"
+    },
+    {
+      "file": "enrolled/Mae_Jemison/Mae_Jemison_2.jpg",
+      "person": "Mae_Jemison",
+      "commons_title": "File:Mae Carol Jemison (cropped 2).jpg",
+      "licence": "Public domain",
+      "credit": "NASA",
+      "source": "https://commons.wikimedia.org/wiki/File:Mae_Carol_Jemison_(cropped_2).jpg"
+    },
+    {
+      "file": "probe/Mae_Jemison_1.jpg",
+      "person": "Mae_Jemison",
+      "commons_title": "File:Mae Jemison - Official portrait of 1987 astronaut candidate.jpg",
+      "licence": "Public domain",
+      "credit": "NASA",
+      "source": "https://commons.wikimedia.org/wiki/File:Mae_Jemison_-_Official_portrait_of_1987_astronaut_candidate.jpg"
+    },
+    {
+      "file": "enrolled/Buzz_Aldrin/Buzz_Aldrin_1.jpg",
+      "person": "Buzz_Aldrin",
+      "commons_title": "File:Apollo 11 Astronaut Buzz Aldrin Participates in a Panel Discussion (48323505302).jpg",
+      "licence": "Public domain",
+      "credit": "U.S. Department of State from United States",
+      "source": "https://commons.wikimedia.org/wiki/File:Apollo_11_Astronaut_Buzz_Aldrin_Participates_in_a_Panel_Discussion_(48323505302).jpg"
+    },
+    {
+      "file": "enrolled/Buzz_Aldrin/Buzz_Aldrin_2.jpg",
+      "person": "Buzz_Aldrin",
+      "commons_title": "File:Buzz Aldrin in 2019 (cropped).jpg",
+      "licence": "Public domain",
+      "credit": "The White House from Washington, DC",
+      "source": "https://commons.wikimedia.org/wiki/File:Buzz_Aldrin_in_2019_(cropped).jpg"
+    },
+    {
+      "file": "probe/Buzz_Aldrin_1.jpg",
+      "person": "Buzz_Aldrin",
+      "commons_title": "File:Roscoe Bartlett and Buzz Aldrin (cropped).jpg",
+      "licence": "Public domain",
+      "credit": "Office of Congressman Roscoe Bartlett",
+      "source": "https://commons.wikimedia.org/wiki/File:Roscoe_Bartlett_and_Buzz_Aldrin_(cropped).jpg"
+    },
+    {
+      "file": "probe/unknown_1_1.jpg",
+      "person": "unknown_1",
+      "commons_title": "File:Alan B. Shepard 1970.jpg",
+      "licence": "Public domain",
+      "credit": "NASA",
+      "source": "https://commons.wikimedia.org/wiki/File:Alan_B._Shepard_1970.jpg"
+    },
+    {
+      "file": "probe/unknown_2_1.jpg",
+      "person": "unknown_2",
+      "commons_title": "File:Astronaut Gus Grissom in 1960.jpg",
+      "licence": "Public domain",
+      "credit": "NASA",
+      "source": "https://commons.wikimedia.org/wiki/File:Astronaut_Gus_Grissom_in_1960.jpg"
+    },
+    {
+      "file": "probe/unknown_3_1.jpg",
+      "person": "unknown_3",
+      "commons_title": "File:Christina Koch Thumbnail (751899268179).jpg",
+      "licence": "Public domain",
+      "credit": "Uploaded by Patricia Moore",
+      "source": "https://commons.wikimedia.org/wiki/File:Christina_Koch_Thumbnail_(751899268179).jpg"
+    }
+  ]
+}

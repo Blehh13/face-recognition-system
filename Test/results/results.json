@@ -1,0 +1,120 @@
+{
+  "summary": {
+    "generated": "2026-09-13 18:06 UTC",
+    "engine": "dlib",
+    "threshold": 0.6,
+    "people_enrolled": 5,
+    "enrolment_photos": 10,
+    "probes": 8,
+    "genuine_probes": 5,
+    "impostor_probes": 3,
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "far": 0.0,
+    "frr": 0.0,
+    "tp": 5,
+    "fp": 0,
+    "tn": 3,
+    "fn": 0
+  },
+  "probes": [
+    {
+      "probe": "Buzz_Aldrin_1.jpg",
+      "expected": "Buzz Aldrin",
+      "predicted": "Buzz Aldrin",
+      "correct": true,
+      "distance": 0.5582,
+      "confidence": 0.5247,
+      "runner_up": {
+        "name": "Sally Ride",
+        "distance": 0.5803
+      }
+    },
+    {
+      "probe": "Grace_Hopper_1.jpg",
+      "expected": "Grace Hopper",
+      "predicted": "Grace Hopper",
+      "correct": true,
+      "distance": 0.5259,
+      "confidence": 0.5447,
+      "runner_up": {
+        "name": "Katherine Johnson",
+        "distance": 0.5989
+      }
+    },
+    {
+      "probe": "Katherine_Johnson_1.jpg",
+      "expected": "Katherine Johnson",
+      "predicted": "Katherine Johnson",
+      "correct": true,
+      "distance": 0.3369,
+      "confidence": 0.6776,
+      "runner_up": {
+        "name": "Grace Hopper",
+        "distance": 0.6499
+      }
+    },
+    {
+      "probe": "Mae_Jemison_1.jpg",
+      "expected": "Mae Jemison",
+      "predicted": "Mae Jemison",
+      "correct": true,
+      "distance": 0.3561,
+      "confidence": 0.6627,
+      "runner_up": {
+        "name": "Katherine Johnson",
+        "distance": 0.7016
+      }
+    },
+    {
+      "probe": "Sally_Ride_1.jpg",
+      "expected": "Sally Ride",
+      "predicted": "Sally Ride",
+      "correct": true,
+      "distance": 0.0735,
+      "confidence": 0.9186,
+      "runner_up": {
+        "name": "Katherine Johnson",
+        "distance": 0.694
+      }
+    },
+    {
+      "probe": "unknown_1_1.jpg",
+      "expected": "Unknown",
+      "predicted": "Unknown",
+      "correct": true,
+      "distance": 0.748,
+      "confidence": 0.4214,
+      "runner_up": {
+        "name": "Sally Ride",
+        "distance": 0.7839
+      }
+    },
+    {
+      "probe": "unknown_2_1.jpg",
+      "expected": "Unknown",
+      "predicted": "Unknown",
+      "correct": true,
+      "distance": 0.6314,
+      "confidence": 0.4822,
+      "runner_up": {
+        "name": "Sally Ride",
+        "distance": 0.6522
+      }
+    },
+    {
+      "probe": "unknown_3_1.jpg",
+      "expected": "Unknown",
+      "predicted": "Unknown",
+      "correct": true,
+      "distance": 0.6697,
+      "confidence": 0.4613,
+      "runner_up": {
+        "name": "Sally Ride",
+        "distance": 0.7193
+      }
+    }
+  ]
+}

@@ -1,10 +1,32 @@
+# Core recognition stack
 face-recognition==1.3.0
+face-recognition-models==0.3.0
 opencv-python==4.10.0.84
 numpy==1.26.4
-Flask==3.0.3
 Pillow==10.4.0
+
+# face_recognition_models imports pkg_resources at module load, and setuptools
+# removed pkg_resources in 81.0. Without this pin, every dlib-backed call dies
+# with "ModuleNotFoundError: No module named 'pkg_resources'".
+setuptools<81
+
+# Web
+Flask==3.0.3
+
+# CLI
+click==8.1.7
+
+# Evaluation and reporting
 scikit-learn==1.5.2
 matplotlib==3.9.2
 seaborn==0.13.2
 tqdm==4.66.5
-click==8.1.7
+
+# Training / benchmarking (optional — only needed for the ml/ pipeline).
+# For GPU, install from the CUDA index instead:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu126
+torch>=2.4
+torchvision>=0.19
+
+# Tests
+pytest==8.3.3

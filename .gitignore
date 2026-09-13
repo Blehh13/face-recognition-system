@@ -28,3 +28,13 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+# ML artefacts (regenerate with `python -m ml.prepare` / `python -m ml.train`)
+ml/cache/
+ml/checkpoints/
+
+# Downloaded ONNX weights (fetched on first use of engine="opencv")
+models/
+
+# Node dependencies (reinstall with `cd frontend && npm install`)
+node_modules/

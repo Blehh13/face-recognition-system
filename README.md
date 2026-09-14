@@ -317,39 +317,49 @@ whatever the slider is set to, rather than showing a bare number.
 
 ```
 face-recognition-system/
-├── src/
-│   ├── __init__.py
-│   ├── detector.py       # FaceDetector — HOG/CNN face bounding boxes
-│   ├── embedder.py       # FaceEmbedder — 128-d dlib ResNet encodings
-│   ├── database.py       # FaceDatabase — JSON persistence, CRUD
-│   ├── matcher.py        # FaceMatcher — NN matching + threshold gate
-│   ├── system.py         # FaceRecognitionSystem — high-level facade
-│   └── evaluator.py      # Evaluator — metrics, plots, reports
-├── frontend/             # React 18 + Vite source
-│   ├── index.html
-│   └── src/
-│       ├── App.jsx
-│       ├── index.css
-│       └── components/   # Header, EnrollForm, PersonList, IdentifyPanel, ResultsPanel
-├── static/dist/          # Built frontend, served by Flask (npm run build)
-├── tests/
-│   ├── test_matcher.py   # matching, thresholds, confidence, JSON safety
-│   ├── test_database.py  # persistence, atomic writes, concurrency
-│   ├── test_api.py       # HTTP contract (recognition stubbed)
-│   └── test_pipeline.py  # end-to-end against real dlib models
-├── database/
-│   └── enrolled_faces.json   # Persistent enrollment store (auto-created)
-├── evaluation/
-│   ├── confusion_matrix.png  # Generated after evaluation
-│   ├── threshold_sweep.png   # Generated after sweep
-│   └── evaluation_report.json
-├── sample_data/          # Auto-generated demo images
-├── app.py                # Flask web application
-├── cli.py                # CLI entry point
-├── demo.py               # End-to-end demo script
-├── generate_sample_data.py   # Synthetic data generator
-├── requirements.txt
-└── README.md
+├── src/                       the recognition library
+│   ├── opencv_engine.py       YuNet detection + SFace embeddings (default)
+│   ├── detector.py            dlib HOG/CNN detection (optional engine)
+│   ├── embedder.py            dlib ResNet-128 embeddings (optional engine)
+│   ├── matcher.py             centroid aggregation, threshold gate, confidence
+│   ├── sqlite_store.py        enrolment store, safe across processes (default)
+│   ├── database.py            JSON store, kept for inspection and migration
+│   ├── liveness.py            advisory presentation-attack scoring
+│   ├── system.py              the facade tying the above together
+│   └── evaluator.py           accuracy/precision/recall/F1/FAR/FRR, plots
+│
+├── Test/                      committed test set — the visible evaluation
+│   ├── build_dataset.py       fetches public-domain photographs from Commons
+│   ├── run_test.py            enrols, identifies, writes metrics
+│   ├── enrolled/<Person>/     3 photographs each, 15 people
+│   ├── probe/                 22 genuine + 10 impostor probes
+│   ├── MANIFEST.json          source URL, licence and credit per file
+│   └── results/               results.json, results.md
+│
+├── ml/                        the measurement work
+│   ├── prepare.py             LFW download, identity-disjoint split
+│   ├── aggregation.py         centroid vs nearest; fits the shipped threshold
+│   ├── benchmark.py           scores every engine on one test split
+│   ├── calibrate.py           threshold calibration
+│   ├── train.py, models.py    ArcFace + CNN training (the negative result)
+│   ├── evaluate.py            AUC, EER, TAR@FAR
+│   └── results/               benchmark.json, thresholds, error curves, plots
+│
+├── frontend/src/              React 18 + Vite
+│   ├── views/                 Directory, AddPerson, Identify
+│   ├── components/            CameraCapture
+│   └── router.js              hash routing
+│
+├── tests/                     140 pytest cases
+├── docs/                      UPSTREAM.md, DEPLOY.md, screenshots/
+├── app.py                     Flask API + SPA host
+├── cli.py                     enroll / identify / list / remove / stats / evaluate
+├── demo.py                    --data-dir, --lfw, --smoke
+├── Dockerfile                 builds frontend + app, no compiler needed
+├── requirements.txt           app + CLI + evaluation
+├── requirements-app.txt       runtime only, used by the Dockerfile
+├── requirements-dlib.txt      optional dlib engine
+└── requirements-ml.txt        optional PyTorch, for ml/ training only
 ```
 
 ---
@@ -522,19 +532,54 @@ Each regression above has a named test, so the bugs they describe cannot return 
 
 ## Known Failure Cases
 
+### Observed in this repository's own test set
+
+**Large age gaps between enrolment and query.** The clearest failure. John Glenn
+is enrolled from Mercury-era photographs and probed decades later; his probe
+sits 1.242 away from his own enrolment set — farther than every unrelated
+person in the test. No threshold separates that, because the embeddings
+genuinely disagree. Enrol photographs from the period you expect to query, or
+keep separate representative vectors per era.
+
+**Faces just past the gate.** Three further probes (Peggy Whitson, Victor
+Glover, John Glenn's second) landed at 1.02–1.06 against a 1.012 threshold.
+They are recoverable by loosening it, but doing so on the basis of this set
+would be fitting the threshold to its own test — see
+[`Test/README.md`](Test/README.md).
+
+Net effect on the committed set: **0% false accepts, 18.2% false rejects.** The
+system is conservative, which is the right direction to fail.
+
+### Expected, from the models' known characteristics
+
 | Scenario | Issue | Mitigation |
 |---|---|---|
-| **Extreme pose** (>45° yaw) | dlib detector misses face or embedding degrades | Enroll multiple angles |
-| **Low resolution** (<80×80 px) | Poor embedding quality | Upscale before detection (`upscale=2`) |
-| **Heavy occlusion** (mask, glasses) | Detection/embedding degrades | Lower threshold or use CNN model |
-| **Near-identical twins** | Very similar embeddings → misidentification | Lower threshold + more enrollment images |
-| **Bright backlighting** | Over-exposure → detection failure | Pre-process: histogram equalisation |
-| **Partial face at image edge** | Truncated bounding box → bad embedding | Crop with padding |
-| **Very large group photos** | Slow, some small faces missed | Use `upscale=2`, CNN model |
-| **Group photo at enrolment** | Every face would be stored under one name | Refused by default; pass `require_single_face=False` to override |
-| **Same person, two spellings** | "alice" and "Alice" become two people | Web enrolment folds new names into an existing case-insensitive match |
-| **Many enrolled people** | Matching is O(people × embeddings) per query | Fine to a few thousand; use FAISS beyond that |
-| **Unauthenticated API** | Anyone who can reach the port can enroll or delete | Binds loopback by default; put a reverse proxy and auth in front before exposing |
+| **Extreme pose** (>45° yaw) | YuNet may miss the face, or alignment degrades | Enrol several angles |
+| **Low resolution** (<80×80 px face) | Poor embedding quality | Capture closer; the detector needs a face at ≥3% of frame to be reliable |
+| **Heavy occlusion** (mask, sunglasses) | Detection and embedding both degrade | Enrol with and without |
+| **Near-identical twins** | Genuinely similar embeddings | No reliable mitigation; this is a model limit |
+| **Bright backlighting** | Over-exposure, detection failure | Histogram equalisation before detection |
+| **Partial face at frame edge** | Truncated box, poor alignment | Crop with padding |
+| **Single enrolment photograph** | Nothing to average; measured EER 2.38% vs 0.44% at three | Enrol 3–5 varied photographs |
+
+### Handled deliberately, not failures
+
+| Scenario | Behaviour |
+|---|---|
+| **No face in the image** | Reported as "no face found", not as a non-match |
+| **Group photo at enrolment** | Refused, so one name cannot absorb a stranger. `require_single_face=False` overrides |
+| **Multiple faces at identification** | All faces are detected and matched independently |
+| **Unreadable or non-image upload** | Rejected with a reason; decompression bombs capped at 50 MP |
+| **Same person, two spellings** | "alice" folds into an existing "Alice" rather than creating a second person |
+| **Two engines in one database** | Refused — dlib and SFace embeddings are not comparable |
+
+### Known limitations
+
+| | |
+|---|---|
+| **No dependable anti-spoofing** | Liveness scoring is advisory and its spoof side is unvalidated. A printed photograph can still authenticate as the person in it. |
+| **No authentication** | Anyone who can reach the port can enrol, identify and delete. Binds loopback by default. |
+| **Matching is linear in enrolled people** | ~21 ms at 9,000 people against ~200 ms to embed the query, so not a bottleneck below roughly 100k identities. |
 
 ---
 
@@ -556,14 +601,49 @@ sys_ = FaceRecognitionSystem(
 
 ## Future Improvements
 
-1. **Better model**: Replace dlib with ArcFace / FaceNet (InsightFace) for higher accuracy
-2. **GPU acceleration**: Enable CUDA for CNN detection + embedding
-3. **Anti-spoofing**: Add liveness detection to reject photos/videos
-4. **Incremental re-training**: Fine-tune embeddings on enrolled data
-5. **Vector DB**: Replace JSON with FAISS/Qdrant for sub-millisecond search at scale
-6. **Authentication**: the API is currently unauthenticated — add tokens before any shared deployment
-7. **Face clustering**: Auto-cluster unknown probes (useful for de-identification)
-8. **Data augmentation**: Generate augmented embeddings (flip, brightness, rotation) at enroll time
+Ordered by expected return, and honest about which of these the evidence in
+this repository already argues for or against.
+
+**1. Enrol more photographs per person.** The cheapest real gain. Measured EER
+falls from 2.38% at one photograph to 0.44% at three
+(`python -m ml.aggregation`). Three to five varied shots beat any change below.
+
+**2. Handle large age gaps at enrolment.** The clearest failure in the test set
+is John Glenn, enrolled from Mercury-era photographs and probed decades later —
+farther from himself than unrelated people are. No threshold fixes that.
+Storing separate representative vectors per era, rather than one average, would.
+
+**3. Authentication.** The API is unauthenticated: anyone who can reach it can
+enrol, identify and delete. It binds loopback by default, which is a mitigation
+rather than a fix. This is the blocker before any shared deployment.
+
+**4. Dependable anti-spoofing.** Liveness detection exists but is advisory only
+and its spoof side is unvalidated — confirming it needs real printed and
+replayed captures from the target camera. Until then a printed photograph can
+still authenticate as the person in it.
+
+**5. A stronger backbone.** InsightFace/ArcFace R100 reaches ~99.8% on LFW
+against SFace's figures here, and drops into the existing engine interface. The
+blocker is licensing: its pretrained models are released for non-commercial
+research only. See [`docs/UPSTREAM.md`](docs/UPSTREAM.md).
+
+**6. Test-time augmentation.** Averaging an image with its mirror is roughly
+free and typically worth a small fraction of a percent.
+
+### Considered and rejected, with reasons
+
+- **A vector database (FAISS/Qdrant).** Measured: matching 9,000 enrolled
+  people takes ~21 ms against ~200 ms to embed the query face. Search is not
+  the bottleneck and would not be until roughly 100k identities. It would add a
+  native dependency and an index to keep in sync, to optimise a tenth of the
+  request.
+- **Training a face model on LFW.** Tried both a CNN with ArcFace from scratch
+  and an MLP head over frozen embeddings. Both lost to the pre-trained backbone,
+  and a 32-configuration ablation found 0 of 32 heads beating it. LFW is an
+  evaluation set, not a training corpus. See [`ml/README.md`](ml/README.md).
+- **Replacing Euclidean with cosine.** On L2-normalised embeddings the two are
+  monotonically equivalent (`‖a-b‖² = 2-2cos`), so this would rename a number
+  without changing a decision.
 
 ---
 
@@ -620,20 +700,37 @@ is now `null` with a `no_candidates: true` flag.
 
 ## Dependencies (All Free)
 
-| Package | Purpose | License |
-|---|---|---|
-| `face_recognition` | dlib face detection + embeddings | MIT |
-| `dlib` | ResNet face model (bundled) | Boost |
-| `opencv-python` | Image I/O + visualisation | Apache 2 |
-| `numpy` | Numerical operations | BSD |
-| `Flask` | Web interface | BSD |
-| `scikit-learn` | Evaluation metrics | BSD |
-| `matplotlib` + `seaborn` | Plots | PSF / BSD |
-| `click` | CLI framework | BSD |
-| `Pillow` | Image format support | HPND |
-| `tqdm` | Progress bars | MIT |
+Nothing here needs a compiler, and nothing costs money.
 
-**Total cost: ₹0 / $0**
+| Package | Purpose | Licence |
+|---|---|---|
+| `opencv-python` | YuNet detection, SFace embeddings, image I/O | Apache 2.0 |
+| `numpy` | Numerical operations | BSD |
+| `Pillow` | Image format support | HPND |
+| `Flask` | Web API and SPA host | BSD |
+| `gunicorn` | WSGI server, for Docker/deployment | MIT |
+| `click` | CLI framework | BSD |
+| `scikit-learn` | Confusion matrix and classification report | BSD |
+| `matplotlib`, `seaborn` | Evaluation plots | PSF / BSD |
+| `tqdm` | Progress bars | MIT |
+| `pytest` | Test suite | MIT |
+
+Model weights, downloaded on first use into `models/`:
+
+| Model | Size | Licence |
+|---|---|---|
+| YuNet (`face_detection_yunet_2023mar.onnx`) | 227 KB | MIT |
+| SFace (`face_recognition_sface_2021dec.onnx`) | 37 MB | Apache 2.0 |
+| MiniFASNetV2 (advisory liveness) | 1.7 MB | Apache 2.0 |
+
+Optional, not installed by default:
+
+| File | For | Note |
+|---|---|---|
+| `requirements-dlib.txt` | the `dlib` engine | needs CMake and a C++ compiler |
+| `requirements-ml.txt` | `ml/` training | PyTorch, ~2.5 GB |
+
+**Total cost: ₹0 / $0.** Every model licence above permits commercial use.
 
 ---
 
